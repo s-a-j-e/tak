@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import axios from "axios";
+
 import Game from "./Game";
 import Board from "./Board";
 import Stack from "./Stack";
@@ -10,7 +12,7 @@ class LiveGame extends Component {
     const newGame = new Game(5);
     this.state = {
       game: newGame,
-      stone: ""
+      username: ""
     };
     this.toMove = {};
     this.isMoving = false;
@@ -18,7 +20,17 @@ class LiveGame extends Component {
     this.selectCapstone = this.selectCapstone.bind(this);
   }
 
-  selectSquare(col, row) {
+  componentWillMount() {
+    axios.post("/game/newGame").then(res => {
+      const { username } = res.data;
+      console.log("username: " + username);
+      this.setState({
+        username
+      });
+    });
+  }
+
+  select(col, row) {
     const newBoard = this.state.game;
     const stack = newBoard.board[col][row];
     const { isOccupied } = stack;
@@ -84,30 +96,12 @@ class LiveGame extends Component {
 
   render() {
     return (
-      <div className="home game">
-        <div className="board">
-          <Board game={this.state.game} selectSquare={this.selectSquare} />
-          <div className="stone-select">
-            <div className="active-stone">{this.state.stone}</div>
-            <button
-              className="piece"
-              onClick={() => {
-                this.toggleStanding();
-              }}
-            >
-              {this.state.stone === "S" ? "F" : "S"}({
-                this.state.game.pieces[1].F
-              })
-            </button>
-            <button
-              className="piece"
-              onClick={() => {
-                this.selectCapstone("C");
-              }}
-            >
-              C ({this.state.game.pieces[1].C})
-            </button>
+      <div className="main">
+        <div className="home game">
+          <div className="board">
+            <Board game={this.state.game} select={this.select} />
           </div>
+          <Chat username={this.state.username} />
         </div>
       </div>
     );
