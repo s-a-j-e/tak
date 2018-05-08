@@ -49,11 +49,15 @@ class LiveGame extends Component {
 
   render() {
     return (
-      <div className="home game">
-        <div className="board">
-          <Board game={this.state.game} select={this.select} />
+      <div>
+        <div className="main">
+          <div className="home game">
+            <div className="board">
+              <Board game={this.state.game} select={this.select} />
+            </div>
+            <Chat />
+          </div>
         </div>
-        <Chat />
       </div>
     );
   }
