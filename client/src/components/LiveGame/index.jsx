@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import axios from "axios";
+
 import Game from "./Game";
 import Board from "./Board";
 import "../../styles/livegame.css";
@@ -9,12 +11,23 @@ class LiveGame extends Component {
     const newGame = new Game(5);
     this.state = {
       game: newGame,
-      stone: ""
+      stone: "",
+      username: ""
     };
     this.toMove = {};
     this.isMoving = false;
     this.selectSquare = this.selectSquare.bind(this);
     this.selectCapstone = this.selectCapstone.bind(this);
+  }
+
+  componentWillMount() {
+    axios.post("/game/newGame").then(res => {
+      const { username } = res.data;
+      console.log("username: " + username);
+      this.setState({
+        username
+      });
+    });
   }
 
   selectSquare(col, row) {
