@@ -8,7 +8,7 @@ import Profile from "./Profile";
 import Game from "./LiveGame";
 import Chat from "./LiveGame/chat";
 const App = () => (
-  <div id="page">
+  <div>
     <Nav />
     <Switch>
       <Route path="/learn" component={Learn} />

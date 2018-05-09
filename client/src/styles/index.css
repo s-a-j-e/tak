@@ -61,16 +61,13 @@ button {
   border-radius: 0 0 2px 2px;
 }
 #chat {
-  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0, 0.05);
-  border-radius: 2px;
   text-align: left;
   max-width: 800px;
   border: 1px solid #ddd;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0, 0.05);
   border-radius: 2px;
   grid-column: 5;
-  grid-row: 2;
-  margin-right: 20px;
+  margin-right: 10px;
   margin-top: 100px;
   height: 500px;
 }
@@ -125,4 +122,23 @@ td {
 }
 .room:hover {
   cursor: pointer;
+}
+
+.buttonlist {
+  grid-column: 4;
+  grid-row: 1;
+  margin-top: 250px;
+  margin-left: 30px;
+}
+.mainbutton {
+  margin-bottom: 30px;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  background-color: darkgrey;
+  cursor: pointer;
+}
+
+.ui.tiny.modal.transition.visible.active {
+  margin-bottom: 200px;
 }

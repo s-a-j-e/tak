@@ -16,8 +16,8 @@ class LiveGame extends Component {
     };
     this.toMove = {};
     this.isMoving = false;
-    this.selectSquare = this.selectSquare.bind(this);
-    this.selectCapstone = this.selectCapstone.bind(this);
+    // this.selectSquare = this.selectSquare.bind(this);
+    // this.selectCapstone = this.selectCapstone.bind(this);
   }
 
   componentWillMount() {
@@ -121,6 +121,7 @@ class LiveGame extends Component {
             </button>
           </div>
         </div>
+        <Chat username={this.state.username} />
       </div>
     );
   }
