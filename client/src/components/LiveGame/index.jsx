@@ -5,6 +5,7 @@ import Game from "./Game";
 import Board from "./Board";
 import Stack from "./Stack";
 import Chat from "./chat";
+import "../../styles/livegame.css";
 
 class LiveGame extends Component {
   constructor(props) {
@@ -37,7 +38,7 @@ class LiveGame extends Component {
     if (!this.isMoving) {
       if (!isOccupied) {
         if (newBoard.pieces[newBoard.toPlay].F !== 0) {
-          newBoard.board[col][row].place(newBoard.toPlay, this.state.stone);
+          stack.place(newBoard.toPlay, this.state.stone);
           if (this.state.stone === "C") {
             newBoard.pieces[newBoard.toPlay].C -= 1;
             this.setState({ stone: "" });
