@@ -3,16 +3,18 @@ import axios from "axios";
 
 import Game from "./Game";
 import Board from "./Board";
-import "../../styles/livegame.css";
+import Stack from "./Stack";
 import Chat from "./chat";
+import "../../styles/livegame.css";
+
 class LiveGame extends Component {
   constructor(props) {
     super(props);
     const newGame = new Game(5);
     this.state = {
       game: newGame,
-      stone: "",
-      username: ""
+      username: "",
+      stone: ""
     };
     this.toMove = {};
     this.isMoving = false;
