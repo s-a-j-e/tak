@@ -16,8 +16,8 @@ class LiveGame extends Component {
     };
     this.toMove = {};
     this.isMoving = false;
-    this.selectSquare = this.selectSquare.bind(this);
-    this.selectCapstone = this.selectCapstone.bind(this);
+    // this.selectSquare = this.selectSquare.bind(this);
+    // this.selectCapstone = this.selectCapstone.bind(this);
   }
 
   componentWillMount() {
@@ -96,13 +96,15 @@ class LiveGame extends Component {
 
   render() {
     return (
-      <div className="main">
-        <div className="home game">
-          <div className="board">
-            <Board game={this.state.game} select={this.select} />
+      <div id="page">
+        <div className="main">
+          <div className="home game">
+            <div className="board">
+              <Board game={this.state.game} select={this.select} />
+            </div>
           </div>
-          <Chat username={this.state.username} />
         </div>
+        <Chat username={this.state.username} />
       </div>
     );
   }
