@@ -13,11 +13,14 @@ import {
 } from "semantic-ui-react";
 
 class Home extends Component {
-  state = {
-    isOpen: false,
-    isOpen2: false,
-    username: ""
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      isOpen: false,
+      isOpen2: false,
+      username: ""
+    };
+  }
   close = () => this.setState({ isOpen: false });
   handlePlayWithFriends = () => {
     //get username send to server socket to create a game
@@ -33,11 +36,11 @@ class Home extends Component {
     ];
     console.log(this.state);
     return (
-      <div id="page">
-        <div className="main">
+      <div className="main">
+        <div className>
           <div className="home home-grid">
             <div className="lobby">
-              <Lobby socket={props.socket} />
+              <Lobby socket={this.props.socket} />
             </div>
             <div className="leaderboard">
               <p>Leaderboard placeholder</p>
@@ -77,7 +80,7 @@ class Home extends Component {
             >
               <Modal.Header>Play with a friend</Modal.Header>
               <Modal.Content>
-                <Form size={"tiny"} key={"small"} onSubmit={on} />
+                <Form size={"tiny"} key={"small"} />
                 <Form.Field>
                   <label>Username:</label>
                   <input

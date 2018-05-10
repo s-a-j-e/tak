@@ -60,33 +60,15 @@ const server = app.listen(PORT, () => {
 let rooms = 0;
 const io = socket(server);
 io.on("connection", function(socket) {
-<<<<<<< HEAD
-  console.log("made socket connection", socket.id);
-  // Create a new game room and notify the creator of game.
-  socket.on("createGame", function(data) {
-    socket.join(`room-${++rooms}`);
-    socket.emit("newGame", { name: data.name, room: `room-${rooms}` });
-  });
-  //chat
-  socket.on("joinGame", function(data) {
-    var room = io.nsps["/"].adapter.rooms[data.room];
-    if (room && room.length === 1) {
-      socket.join(data.room);
-      socket.broadcast.to(data.room).emit("player1", {});
-      socket.emit("player2", { name: data.name, room: data.room });
-    } else {
-      socket.emit("err", { message: "Sorry, The room is full!" });
-    }
-=======
   socket.leave(socket.id);
 
-  socket.on('createOrJoinGame', async() => {
-    if (Object.keys(socket.rooms).length) { 
-      socket.emit('updateGame', []); // TODO: send move history associated with room to client
+  socket.on("createOrJoinGame", async () => {
+    if (Object.keys(socket.rooms).length) {
+      socket.emit("updateGame", []); // TODO: send move history associated with room to client
     } else {
-      await socket.join('testRoom'); // TODO: randomize roomName
-      console.log('socket.rooms', socket.rooms);
-      socket.to('testRoom').emit('updateGame', []);
+      await socket.join("testRoom"); // TODO: randomize roomName
+      console.log("socket.rooms", socket.rooms);
+      socket.to("testRoom").emit("updateGame", []);
     }
     const pendingGames = [];
     const { rooms } = io.sockets.adapter;
@@ -94,34 +76,33 @@ io.on("connection", function(socket) {
       const currentRoom = rooms[room];
 
       if (currentRoom.length === 1) {
-        pendingGames.push({ ...currentRoom, name: room});
+        pendingGames.push({ ...currentRoom, name: room });
       }
     }
-    socket.broadcast.emit('postGames', pendingGames);
+    socket.broadcast.emit("postGames", pendingGames);
   });
 
-  socket.on('broadcastGameUpdate', (data) => {
-    console.log('broadcastGameUpdate triggered', data);
-    socket.to('testRoom').emit('updateGame', [data]);
+  socket.on("broadcastGameUpdate", data => {
+    console.log("broadcastGameUpdate triggered", data);
+    socket.to("testRoom").emit("updateGame", [data]);
   });
 
-  socket.on('fetchLobby', () => {
+  socket.on("fetchLobby", () => {
     const games = [];
     const { rooms } = io.sockets.adapter;
     for (let room in rooms) {
       const currentRoom = rooms[room];
       if (currentRoom.length === 1) {
-        games.push({ ...currentRoom, name: room});
+        games.push({ ...currentRoom, name: room });
       }
     }
-    socket.emit('updateLobby', games);
+    socket.emit("updateLobby", games);
   });
 
-  socket.on('joinGame', (name) => {
+  socket.on("joinGame", name => {
     socket.join(name);
     console.log(`someone has joined ${name}`);
     console.log(`${name}: ${JSON.stringify(io.sockets.adapter.rooms[name])}`);
->>>>>>> 30c08d50593d47d78174770244ff51c90141f88c
   });
 
   socket.on("chat", function(data) {
