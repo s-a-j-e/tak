@@ -57,9 +57,27 @@ const server = app.listen(PORT, () => {
 });
 
 //Socket Setup
+let rooms = 0;
 const io = socket(server);
 io.on("connection", function(socket) {
   console.log("made socket connection", socket.id);
+  // Create a new game room and notify the creator of game.
+  socket.on("createGame", function(data) {
+    socket.join(`room-${++rooms}`);
+    socket.emit("newGame", { name: data.name, room: `room-${rooms}` });
+  });
+  //chat
+  socket.on("joinGame", function(data) {
+    var room = io.nsps["/"].adapter.rooms[data.room];
+    if (room && room.length === 1) {
+      socket.join(data.room);
+      socket.broadcast.to(data.room).emit("player1", {});
+      socket.emit("player2", { name: data.name, room: data.room });
+    } else {
+      socket.emit("err", { message: "Sorry, The room is full!" });
+    }
+  });
+
   socket.on("chat", function(data) {
     io.sockets.emit("chat", data);
   });
