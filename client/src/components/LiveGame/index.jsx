@@ -1,7 +1,11 @@
-import React, { Component } from 'react';
-import Game from './Game';
-import Board from './Board';
-import '../../styles/livegame.css';
+import React, { Component } from "react";
+import axios from "axios";
+
+import Game from "./Game";
+import Board from "./Board";
+import Stack from "./Stack";
+import Chat from "./chat";
+import "../../styles/livegame.css";
 
 class LiveGame extends Component {
   constructor(props) {
@@ -9,12 +13,23 @@ class LiveGame extends Component {
     const newGame = new Game(5);
     this.state = {
       game: newGame,
-      stone: '',
+      username: "",
+      stone: ""
     };
     this.toMove = {};
     this.isMoving = false;
     this.selectSquare = this.selectSquare.bind(this);
     this.selectCapstone = this.selectCapstone.bind(this);
+  }
+
+  componentWillMount() {
+    axios.post("/game/newGame").then(res => {
+      const { username } = res.data;
+      console.log("username: " + username);
+      this.setState({
+        username
+      });
+    });
   }
 
   selectSquare(col, row) {
@@ -25,57 +40,59 @@ class LiveGame extends Component {
       if (!isOccupied) {
         if (newBoard.pieces[newBoard.toPlay].F !== 0) {
           stack.place(newBoard.toPlay, this.state.stone);
-          if (this.state.stone === 'C') {
+          if (this.state.stone === "C") {
             newBoard.pieces[newBoard.toPlay].C -= 1;
-            this.setState({ stone: '' });
+            this.setState({ stone: "" });
           } else {
             newBoard.pieces[newBoard.toPlay].F -= 1;
-            if (this.state.stone === 'S') this.setState({ stone: '' });
+            if (this.state.stone === "S") this.setState({ stone: "" });
           }
-          newBoard.toPlay = (newBoard.toPlay === 1) ? 2 : 1;
+          newBoard.toPlay = newBoard.toPlay === 1 ? 2 : 1;
         }
-      } else if (isOccupied && (stack.owner === newBoard.toPlay)) {
+      } else if (isOccupied && stack.owner === newBoard.toPlay) {
         this.toMove.stack = stack.stack.splice(0, newBoard.size);
         this.toMove.stone = stack.stone;
-        stack.stone = '';
+        stack.stone = "";
         stack.owner = stack.stack[0] || 0;
         stack.isOccupied = 0;
         this.isMoving = true;
       }
-    } else if (stack.stone === '') {
+    } else if (stack.stone === "") {
       stack.place(this.toMove.stack.pop());
       if (!this.toMove.stack.length) {
         stack.stone = this.toMove.stone;
         this.toMove = {};
         this.isMoving = false;
-        newBoard.toPlay = (newBoard.toPlay === 1) ? 2 : 1;
+        newBoard.toPlay = newBoard.toPlay === 1 ? 2 : 1;
       }
-    } else if (stack.stone === 'S' &&
-               this.toMove.stone === 'C' &&
-               this.toMove.stack.length === 1) {
-      stack.place(this.toMove.stack.pop(), 'C');
+    } else if (
+      stack.stone === "S" &&
+      this.toMove.stone === "C" &&
+      this.toMove.stack.length === 1
+    ) {
+      stack.place(this.toMove.stack.pop(), "C");
       this.isMoving = false;
-      newBoard.toPlay = (newBoard.toPlay === 1) ? 2 : 1;
+      newBoard.toPlay = newBoard.toPlay === 1 ? 2 : 1;
     }
 
     this.setState({
-      game: newBoard,
+      game: newBoard
     });
   }
 
   selectCapstone(stone) {
     if (this.state.game.pieces[this.state.game.toPlay].C > 0) {
       this.setState({
-        stone,
+        stone
       });
     }
   }
 
   toggleStanding() {
-    if (this.state.stone === '') {
-      this.setState({ stone: 'S' });
+    if (this.state.stone === "") {
+      this.setState({ stone: "S" });
     } else {
-      this.setState({ stone: '' });
+      this.setState({ stone: "" });
     }
   }
 
@@ -86,13 +103,26 @@ class LiveGame extends Component {
           <Board game={this.state.game} selectSquare={this.selectSquare} />
           <div className="stone-select">
             <div className="active-stone">{this.state.stone}</div>
-            <button className="piece" onClick={() => { this.toggleStanding(); }}>
-              { this.state.stone === 'S' ? 'F' : 'S' }({ this.state.game.pieces[1].F })
+            <button
+              className="piece"
+              onClick={() => {
+                this.toggleStanding();
+              }}
+            >
+              {this.state.stone === "S" ? "F" : "S"}({
+                this.state.game.pieces[1].F
+              })
             </button>
-            <button className="piece" onClick={() => { this.selectCapstone('C'); }}>
-            C ({this.state.game.pieces[1].C})
+            <button
+              className="piece"
+              onClick={() => {
+                this.selectCapstone("C");
+              }}
+            >
+              C ({this.state.game.pieces[1].C})
             </button>
           </div>
+          <Chat username={this.state.username} />
         </div>
       </div>
     );
