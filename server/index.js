@@ -60,6 +60,7 @@ const server = app.listen(PORT, () => {
 let rooms = 0;
 const io = socket(server);
 io.on("connection", function(socket) {
+<<<<<<< HEAD
   console.log("made socket connection", socket.id);
   // Create a new game room and notify the creator of game.
   socket.on("createGame", function(data) {
@@ -76,6 +77,51 @@ io.on("connection", function(socket) {
     } else {
       socket.emit("err", { message: "Sorry, The room is full!" });
     }
+=======
+  socket.leave(socket.id);
+
+  socket.on('createOrJoinGame', async() => {
+    if (Object.keys(socket.rooms).length) { 
+      socket.emit('updateGame', []); // TODO: send move history associated with room to client
+    } else {
+      await socket.join('testRoom'); // TODO: randomize roomName
+      console.log('socket.rooms', socket.rooms);
+      socket.to('testRoom').emit('updateGame', []);
+    }
+    const pendingGames = [];
+    const { rooms } = io.sockets.adapter;
+    for (let room in rooms) {
+      const currentRoom = rooms[room];
+
+      if (currentRoom.length === 1) {
+        pendingGames.push({ ...currentRoom, name: room});
+      }
+    }
+    socket.broadcast.emit('postGames', pendingGames);
+  });
+
+  socket.on('broadcastGameUpdate', (data) => {
+    console.log('broadcastGameUpdate triggered', data);
+    socket.to('testRoom').emit('updateGame', [data]);
+  });
+
+  socket.on('fetchLobby', () => {
+    const games = [];
+    const { rooms } = io.sockets.adapter;
+    for (let room in rooms) {
+      const currentRoom = rooms[room];
+      if (currentRoom.length === 1) {
+        games.push({ ...currentRoom, name: room});
+      }
+    }
+    socket.emit('updateLobby', games);
+  });
+
+  socket.on('joinGame', (name) => {
+    socket.join(name);
+    console.log(`someone has joined ${name}`);
+    console.log(`${name}: ${JSON.stringify(io.sockets.adapter.rooms[name])}`);
+>>>>>>> 30c08d50593d47d78174770244ff51c90141f88c
   });
 
   socket.on("chat", function(data) {

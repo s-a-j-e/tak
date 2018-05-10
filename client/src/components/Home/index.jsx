@@ -37,7 +37,7 @@ class Home extends Component {
         <div className="main">
           <div className="home home-grid">
             <div className="lobby">
-              <Lobby />
+              <Lobby socket={props.socket} />
             </div>
             <div className="leaderboard">
               <p>Leaderboard placeholder</p>

@@ -33,6 +33,18 @@ class LiveGame extends Component {
   }
 
   selectSquare(col, row) {
+    const { socket } = props;
+    socket.emit("createOrJoinGame");
+    socket.on("updateGame", moves => {
+      if (moves.length) {
+        // TODO: should recieve moves array from server
+        moves.forEach(move => {
+          this.selectSquare(move.col, move.row, false);
+        });
+      }
+    });
+  }
+  selectSquare(col, row, isPlayerMove) {
     const newBoard = this.state.game;
     const stack = newBoard.board[col][row];
     const { isOccupied } = stack;
@@ -78,6 +90,9 @@ class LiveGame extends Component {
     this.setState({
       game: newBoard
     });
+    if (isPlayerMove) {
+      this.props.socket.emit("broadcastGameUpdate", { col, row });
+    }
   }
 
   selectCapstone(stone) {
@@ -98,32 +113,34 @@ class LiveGame extends Component {
 
   render() {
     return (
-      <div className="home game">
-        <div className="board">
-          <Board game={this.state.game} selectSquare={this.selectSquare} />
-          <div className="stone-select">
-            <div className="active-stone">{this.state.stone}</div>
-            <button
-              className="piece"
-              onClick={() => {
-                this.toggleStanding();
-              }}
-            >
-              {this.state.stone === "S" ? "F" : "S"}({
-                this.state.game.pieces[1].F
-              })
-            </button>
-            <button
-              className="piece"
-              onClick={() => {
-                this.selectCapstone("C");
-              }}
-            >
-              C ({this.state.game.pieces[1].C})
-            </button>
+      <div className="main">
+        <div className="home game">
+          <div className="board">
+            <Board game={this.state.game} selectSquare={this.selectSquare} />
+            <div className="stone-select">
+              <div className="active-stone">{this.state.stone}</div>
+              <button
+                className="piece"
+                onClick={() => {
+                  this.toggleStanding();
+                }}
+              >
+                {this.state.stone === "S" ? "F" : "S"}({
+                  this.state.game.pieces[1].F
+                })
+              </button>
+              <button
+                className="piece"
+                onClick={() => {
+                  this.selectCapstone("C");
+                }}
+              >
+                C ({this.state.game.pieces[1].C})
+              </button>
+            </div>
           </div>
-          <Chat username={this.state.username} />
         </div>
+        <Chat username={this.state.username} socket={this.props.socket} />
       </div>
     );
   }
