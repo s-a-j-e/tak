@@ -105,11 +105,35 @@ io.on("connection", function(socket) {
     console.log(`${name}: ${JSON.stringify(io.sockets.adapter.rooms[name])}`);
   });
 
+  //Chat/Typing
   socket.on("chat", function(data) {
     io.sockets.emit("chat", data);
   });
   socket.on("typing", function(data) {
     console.log("data", data);
     socket.broadcast.emit("typing", data);
+  });
+
+  // Create a new game room to play with friend and notify the creator of game.
+  socket.on("createGame", data => {
+    socket.join(`privateroom-${++rooms}`);
+    socket.emit("newGame", {
+      username: data.username,
+      room: `privateroom-${rooms}`
+    });
+  });
+
+  // Connect the Player 2 to the room he requested. Show error if room full.
+  socket.on("joinFriendGame", function(data) {
+    const { rooms } = io.sockets.adapter;
+
+    console.log("rooms", rooms);
+    // if (room && room.length === 1) {
+    //   socket.join(data.room);
+    //   socket.broadcast.to(data.room).emit("player1", {});
+    //   socket.emit("player2", { room: data.room });
+    // } else {
+    //   socket.emit("err", { message: "Sorry, The room is full!" });
+    // }
   });
 });

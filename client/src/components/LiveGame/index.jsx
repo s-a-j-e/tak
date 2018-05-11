@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
-
+import { Link, withRouter } from "react-router-dom";
 import Game from "./Game";
 import Board from "./Board";
 import Stack from "./Stack";
@@ -22,7 +22,9 @@ class LiveGame extends Component {
     this.selectCapstone = this.selectCapstone.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
+    let socket = this.props.socket;
+    console.log("this.props", this.props);
     axios.post("/game/newGame").then(res => {
       const { username } = res.data;
       console.log("username: " + username);
@@ -30,6 +32,12 @@ class LiveGame extends Component {
         username
       });
     });
+    // Join an existing game on the entered roomId. Emit the joinGame event.
+
+    const roomID = this.props.location.pathname.split("/").pop();
+    console.log("roomID", roomID);
+
+    socket.emit("joinFriendGame", { room: roomID });
   }
 
   selectSquare(col, row) {
@@ -146,4 +154,4 @@ class LiveGame extends Component {
   }
 }
 
-export default LiveGame;
+export default withRouter(LiveGame);

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import Lobby from "./lobby";
+import { Route, Redirect } from "react-router";
 import {
   Input,
   Button,
@@ -18,12 +19,31 @@ class Home extends Component {
     this.state = {
       isOpen: false,
       isOpen2: false,
-      username: ""
+      username: "",
+      url: false,
+      linkto: false
     };
   }
   close = () => this.setState({ isOpen: false });
-  handlePlayWithFriends = () => {
+  handlePlayWithFriends = username => {
+    const { socket } = this.props;
+    const self = this;
     //get username send to server socket to create a game
+    socket.emit("createGame", {
+      username
+    });
+    socket.on("newGame", function(data) {
+      let url = `http://localhost:3000/game/newGame/${data.room}`;
+      let linkto = `game/newGame/${data.room}`;
+      self.setState({
+        url,
+        linkto,
+        username,
+        isOpen2: false,
+        isOpen3: open
+      });
+      //self.props.history.push(linkto);
+    });
   };
   render() {
     const options = [
@@ -34,7 +54,6 @@ class Home extends Component {
       { key: "4", text: "4", value: "4" },
       { key: "3", text: "3", value: "3" }
     ];
-    console.log(this.state);
     return (
       <div className="main">
         <div className>
@@ -78,7 +97,7 @@ class Home extends Component {
               closeIcon
               onClose={() => this.setState({ isOpen2: false })}
             >
-              <Modal.Header>Play with a friend</Modal.Header>
+              <Modal.Header>Click the link below</Modal.Header>
               <Modal.Content>
                 <Form size={"tiny"} key={"small"} />
                 <Form.Field>
@@ -93,14 +112,43 @@ class Home extends Component {
                 </Form.Field>
               </Modal.Content>
               <Modal.Actions>
-                <Link to="/game">
+                <Button
+                  positive
+                  icon="gamepad"
+                  size="large"
+                  labelPosition="right"
+                  content="New Game"
+                  onClick={() =>
+                    this.handlePlayWithFriends(this.state.username)
+                  }
+                />
+              </Modal.Actions>
+            </Modal>
+          </Transition>
+
+          <Transition animation={"pulse"} duration={100} visible={true}>
+            <Modal
+              open={this.state.isOpen3}
+              size={"tiny"}
+              closeIcon
+              onClose={() => this.setState({ isOpen3: false })}
+            >
+              <Modal.Header>Click the link below</Modal.Header>
+              <Modal.Content>
+                <Form size={"tiny"} key={"small"} />
+                <Form.Field>
+                  <label>{this.state.url}</label>
+                </Form.Field>
+              </Modal.Content>
+              <Modal.Actions>
+                <Link to={this.state.linkto}>
+                  {" "}
                   <Button
                     positive
                     icon="gamepad"
                     size="large"
                     labelPosition="right"
-                    content="New Game"
-                    onClick={() => this.handlePlayWithFriends()}
+                    content="Enter romm"
                   />
                 </Link>
               </Modal.Actions>
@@ -143,4 +191,4 @@ class Home extends Component {
   }
 }
 
-export default Home;
+export default withRouter(Home);
