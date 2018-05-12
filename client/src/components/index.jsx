@@ -9,13 +9,12 @@ import Game from './LiveGame';
 import Chat from './LiveGame/chat';
 import socketIOClient from 'socket.io-client';
 
-
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       socket: socketIOClient()
-    }
+    };
   }
 
   render() {
@@ -23,11 +22,18 @@ class App extends Component {
       <div id="page">
         <Nav />
         <Switch>
-          <Route path='/learn' component={Learn} />
-          <Route path='/about' component={About} />
-          <Route path='/profile' component={Profile} />
-          <Route path='/game' render={() => (<Game socket={this.state.socket} />)} />
-          <Route path='/' render={() => (<Home socket={this.state.socket} />)} />
+          <Route path="/learn" component={Learn} />
+          <Route path="/about" component={About} />
+          <Route path="/profile" component={Profile} />
+          <Route
+            path="/game"
+            render={() => <Game socket={this.state.socket} />}
+          />
+          <Route
+            path="/private"
+            render={() => <Game socket={this.state.socket} />}
+          />
+          <Route path="/" render={() => <Home socket={this.state.socket} />} />
         </Switch>
       </div>
     );

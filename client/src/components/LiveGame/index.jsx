@@ -1,19 +1,29 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
-
+import { Link, withRouter } from 'react-router-dom';
 import Game from './Game';
 import Board from './Board';
 import Stack from './Stack';
 import Chat from './chat'; // not in use currently
 import '../../styles/livegame.css';
 import { convertCoord } from './gameUtil';
-
+import {
+  Input,
+  Button,
+  Header,
+  Modal,
+  Icon,
+  Form,
+  Select,
+  Transition
+} from 'semantic-ui-react';
 class LiveGame extends Component {
   constructor(props) {
     super(props);
     const newGame = new Game(5);
     this.state = {
+      isOpen: true,
       game: newGame,
       stone: '',
       user: props.currentUser
@@ -21,7 +31,7 @@ class LiveGame extends Component {
     this.movePieces = this.movePieces.bind(this);
     this.handleSquareClick = this.handleSquareClick.bind(this);
     this.selectCapstone = this.selectCapstone.bind(this);
-    
+
     const { socket, username } = props;
     const { game } = this.state;
     socket.emit('syncGame', username); // Creates new room if not already in one
@@ -36,6 +46,15 @@ class LiveGame extends Component {
     socket.on('updateGame', ({ col, row, stone }) => {
       this.movePieces(col, row, false, stone);
     });
+
+    // Join an existing game. Emit the joinGame event.
+    const roomID = this.props.location.pathname.split('/').pop();
+    socket.emit('joinFriendGame', { room: roomID });
+    socket.on('err', data => {
+      this.setState({
+        message: data.message
+      });
+    });
   }
 
   movePieces(col, row, isPlayerMove, stone = this.state.stone) {
@@ -43,15 +62,20 @@ class LiveGame extends Component {
     game.selectStack(col, row, stone);
     if (this.state.stone !== '') {
       this.setState({
-        stone: '',
+        stone: ''
       });
     }
     this.setState({
-      game,
+      game
     });
 
     if (isPlayerMove) {
-      this.props.socket.emit('broadcastGameUpdate', { col, row, stone, game: game.player1 });
+      this.props.socket.emit('broadcastGameUpdate', {
+        col,
+        row,
+        stone,
+        game: game.player1
+      });
     }
   }
 
@@ -64,7 +88,7 @@ class LiveGame extends Component {
   selectCapstone(stone) {
     if (this.state.game.pieces[this.state.game.toPlay].C > 0) {
       this.setState({
-        stone,
+        stone
       });
     }
   }
@@ -135,9 +159,7 @@ class LiveGame extends Component {
             <div className="stone-count">
             {OpponentPieces}
             </div>
-            <div>
-              { this.winner() }
-            </div>
+            <div>{this.winner()}</div>
             <Board game={game} handleSquareClick={this.handleSquareClick} />
             <div className="stone-select">
               <div className="active-stone">{stone}</div>
@@ -151,10 +173,10 @@ class LiveGame extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
   return {
     username: state.currentUser
   };
-}
+};
 
-export default connect(mapStateToProps)(LiveGame);
+export default withRouter(connect(mapStateToProps)(LiveGame));
