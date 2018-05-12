@@ -52,6 +52,7 @@ const server = app.listen(PORT, () => {
 
 //Socket Setup
 const io = socket(server);
+
 io.on('connection', function(socket) {
   socket.leave(socket.id);
 

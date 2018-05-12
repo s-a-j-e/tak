@@ -16,6 +16,7 @@ class LiveGame extends Component {
     this.state = {
       game: newGame,
       stone: '',
+      user: props.currentUser
     };
     this.movePieces = this.movePieces.bind(this);
     this.handleSquareClick = this.handleSquareClick.bind(this);
@@ -28,6 +29,9 @@ class LiveGame extends Component {
       game.player1 = player1;
       game.player2 = player2;
       game.activePlayer = player1;
+      this.setState({
+        game
+      });
     });
     socket.on('updateGame', ({ col, row, stone }) => {
       this.movePieces(col, row, false, stone);
@@ -75,18 +79,61 @@ class LiveGame extends Component {
 
   winner() {
     if (this.state.game.victor !== 0) {
-      return <h3>Player {this.state.game.victor} wins!</h3>;
+      return <h3>{this.state.game[`player${this.state.game.victor}`]} wins!</h3>;
     }
   }
 
   render() {
     const { game, stone } = this.state;
+    const { username } = this.props;
+    let PlayerPieces;
+    let OpponentPieces;
+    
+    if (!game.player1) {
+      PlayerPieces = <div></div>;
+      OpponentPieces = <div></div>;
+    } else if (this.props.username === game.player1) {
+      PlayerPieces = (
+        <div>
+          <button className="btn-player1-piece" onClick={() => { this.toggleStanding(); }}>
+            { stone === 'S' ? 'F' : 'S' }({ game.pieces[1].F })
+          </button>
+          <button className="btn-player1-piece" onClick={() => { this.selectCapstone('C'); }}>
+          C ({game.pieces[1].C})
+          </button>
+        </div>
+      );
+      OpponentPieces = (
+        <div>
+          <p>{`F(${game.pieces[2].F}) / C(${game.pieces[2].C})`}</p>
+          <h5>{game.player2}</h5>
+        </div>
+      );
+    } else {
+      PlayerPieces = (
+        <div>
+          <button className="btn-player2-piece" onClick={() => { this.toggleStanding(); }}>
+            { stone === 'S' ? 'F' : 'S' }({ game.pieces[2].F })
+          </button>
+          <button className="btn-player2-piece" onClick={() => { this.selectCapstone('C'); }}>
+          C ({game.pieces[2].C})
+          </button>
+        </div>
+      );
+      OpponentPieces = (
+        <div>
+          <p>{`F(${game.pieces[1].F}) / C(${game.pieces[1].C})`}</p>
+          <h5>{game.player1}</h5>
+        </div>
+      );
+    }
+
     return (
       <div className="main">
         <div className="home game">
           <div className="board">
             <div className="stone-count">
-              Black | F({game.pieces[2].F}) / C({game.pieces[2].C})
+            {OpponentPieces}
             </div>
             <div>
               { this.winner() }
@@ -94,12 +141,8 @@ class LiveGame extends Component {
             <Board game={game} handleSquareClick={this.handleSquareClick} />
             <div className="stone-select">
               <div className="active-stone">{stone}</div>
-              <button className="piece" onClick={() => { this.toggleStanding(); }}>
-                { stone === 'S' ? 'F' : 'S' }({ game.pieces[1].F })
-              </button>
-              <button className="piece" onClick={() => { this.selectCapstone('C'); }}>
-              C ({game.pieces[1].C})
-              </button>
+              <h4>{username}</h4>
+              {PlayerPieces}
             </div>
           </div>
         </div>

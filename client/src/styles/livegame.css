@@ -6,6 +6,16 @@
   border-top: 1px;
 }
 
+.btn-player1-piece {
+  background-color: #fff;
+  color: #608292
+}
+
+.btn-player2-piece {
+  background-color: #608292;
+  color: #fff;
+}
+
 .board {
   min-height: 600px;
   width: 600px;
