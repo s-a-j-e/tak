@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { Modal } from 'reactstrap';
 import axios from 'axios';
 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { toggleLoginLogout, login } from '../../../actions/actions';
 class SignupModal extends Component {
   constructor(props) {
     super(props);
@@ -31,10 +34,15 @@ class SignupModal extends Component {
       .then((res) => {
         if (res.status === 200) {
           this.props.toggleView('off');
+          this.props.toggleLoginLogout(true);
+          this.props.login(username);
         }
+      })
+      .catch((err) => {
+        console.error(err);
       });
     } else {
-      console.log('both password fields must match');
+      // TODO: Alert user passwords must match
     }
   }
 
@@ -57,11 +65,11 @@ class SignupModal extends Component {
             </div>
             <div>
               <p>Password</p>
-              <input type="text" value={this.state.password} onChange={(e) => {this.handleInputChange(e, 'password')}} />
+              <input type="password" value={this.state.password} onChange={(e) => {this.handleInputChange(e, 'password')}} />
             </div>
             <div>
               <p>Retype Password</p>         
-              <input type="text" value={this.state.passwordRetype} onChange={(e) => {this.handleInputChange(e, 'passwordRetype')}} />
+              <input type="password" value={this.state.passwordRetype} onChange={(e) => {this.handleInputChange(e, 'passwordRetype')}} />
             </div>
             <div>
               <button>
@@ -78,4 +86,15 @@ class SignupModal extends Component {
   }
 }
 
-export default SignupModal
+function mapStateToProps(state) {
+  return { 
+    isLoggedIn: state.isLoggedIn,
+    currentUser: state.currentUser
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ toggleLoginLogout, login }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignupModal);

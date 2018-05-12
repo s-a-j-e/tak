@@ -3,6 +3,11 @@ import SignupModal from './AuthModals/SignupModal';
 import LoginModal from './AuthModals/LoginModal';
 import LogoutModal from './AuthModals/LogoutModal';
 
+import axios from 'axios';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { toggleLoginLogout, login } from '../../actions/actions';
+
 class AuthNav extends Component {
   constructor(props) {
     super(props);
@@ -12,6 +17,20 @@ class AuthNav extends Component {
     this.changeView = this.changeView.bind(this);
   }
 
+  componentDidMount(){
+    axios.get('/auth/check')
+    .then((res) => {
+      let currentUser = res.data;
+      if(currentUser[0] !== "<"){
+        this.props.toggleLoginLogout(true);
+        this.props.login(currentUser);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  }
+
   changeView(view) {
     this.setState({
       modalView: view
@@ -19,14 +38,24 @@ class AuthNav extends Component {
   }
 
   render() {
-    // TODO: Conditionals need to be set in place for
+    // Conditionals need to be set in place for
     // rendering either login/signup nav or logout nav
-      // - will need access to redux state once redux implemented
+    // - will need access to redux state once redux implemented
     const { modalView } = this.state;
-    return (
+    const { isLoggedIn } = this.props;
+    const userNavLink = (
+        <nav onClick={() => {this.changeView('logout')}}>Logout</nav>
+    );
+
+    const guestNavLink = (
       <div>
-        <nav onClick={() => {this.changeView('login')}}>(Login/Signup)</nav>
-        <nav onClick={() => {this.changeView('logout')}}>(Logout)</nav>
+        <nav onClick={() => {this.changeView('login')}}>Login</nav>
+      </div>
+    );
+      
+      return (
+      <div>
+        { isLoggedIn ? userNavLink : guestNavLink }
         <SignupModal toggleView={this.changeView} modalView={modalView} />
         <LoginModal toggleView={this.changeView} modalView={modalView} />
         <LogoutModal toggleView={this.changeView} modalView={modalView} />
@@ -35,4 +64,15 @@ class AuthNav extends Component {
   }
 };
 
-export default AuthNav;
+function mapStateToProps(state) {
+  return { 
+    isLoggedIn: state.isLoggedIn,
+    currentUser: state.currentUser
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ toggleLoginLogout, login }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AuthNav);

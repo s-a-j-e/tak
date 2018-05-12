@@ -1,3 +1,11 @@
+.stone-count {
+
+}
+
+.game>button {
+  border-top: 1px;
+}
+
 .board {
   min-height: 600px;
   width: 600px;
@@ -10,6 +18,24 @@
 .square {
   display: flex;
   flex-direction: column;
+}
+
+.valid:hover {
+  background-color: #8BBA62 !important;
+}
+
+.origin {
+}
+
+.selected {
+  display: flex;
+  flex-direction: column;
+  margin-top: -20px;
+  max-height: 75px;
+}
+
+.selected>div{
+  box-shadow: 3px 3px rgba(0,185,0,.5);
 }
 
 .stone {
@@ -36,7 +62,7 @@
 .stack-overflow {
   display: flex;
   flex-direction: column;
-  position: fixed;
+  position: absolute;
 }
 
 .overflow-stone {

@@ -1,8 +1,17 @@
+<<<<<<< HEAD
 const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
 const path = require("path");
 const bodyParser = require("body-parser");
+=======
+const express = require('express');
+const session = require('express-session');
+const passport = require('passport');
+const path = require('path');
+const bodyParser = require('body-parser');
+const socket = require('socket.io');
+>>>>>>> a0495d88300a26f8e9c45a830eb5e2b5318d69db
 
 require("dotenv").config();
 
@@ -31,11 +40,16 @@ app.use("/auth", authRoutes);
 // Implement authorization check for relevant requests, ie profile, logout, etc
 const authCheck = (req, res, next) => {
   if (!req.user) {
+<<<<<<< HEAD
     res.redirect("/");
+=======
+    res.redirect('/');
+>>>>>>> a0495d88300a26f8e9c45a830eb5e2b5318d69db
   } else {
     next();
   }
 };
+<<<<<<< HEAD
 
 app.get("/bundle.js", (req, res) => {
   console.log("getting bundle");
@@ -50,3 +64,71 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
+=======
+
+app.use('/', express.static(path.join(__dirname, '../client/dist')));
+
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
+
+const server = app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
+});
+
+//Socket Setup
+const io = socket(server);
+io.on('connection', function(socket) {
+  socket.leave(socket.id);
+
+  socket.on('syncGame', async(username) => {
+    // Only creates new game if not already in one
+    if (!Object.keys(socket.rooms).length) {
+      await socket.join(username);
+      io.sockets.adapter.rooms[username].player1 = username;
+    } else {
+      Object.keys(socket.rooms).forEach((room) => {
+        gameRoom = io.sockets.adapter.rooms[room];
+        io.in(room).emit('playerJoin', gameRoom.player1, username);
+      })
+    }
+
+    // Find rooms with only one socket attached (i.e. pending games)
+    const pendingGames = [];
+    const { rooms } = io.sockets.adapter;
+    for (let room in rooms) {
+      const currentRoom = rooms[room];
+      if (currentRoom.length === 1) {
+        pendingGames.push({ ...currentRoom, name: room});
+      }
+    }
+    socket.broadcast.emit('updateLobby', pendingGames);
+  });
+
+  // Update game for each piece move
+  socket.on('broadcastGameUpdate', (data) => {
+    socket.to(data.game).emit('updateGame', data);
+  });
+
+  // Serve pending game list to lobby on lobby initialize
+  socket.on('fetchLobby', () => {
+    const games = [];
+    const { rooms } = io.sockets.adapter;
+    for (let room in rooms) {
+      const currentRoom = rooms[room];
+      if (currentRoom.length === 1) {
+        games.push({ ...currentRoom, name: room});
+      }
+    }
+    socket.emit('updateLobby', games);
+  });
+
+  // Join user to pending game
+  socket.on('joinGame', (roomName, username) => {
+    socket.join(roomName);
+    io.sockets.adapter.rooms[roomName].player2 = username;
+  });
+});
+>>>>>>> a0495d88300a26f8e9c45a830eb5e2b5318d69db

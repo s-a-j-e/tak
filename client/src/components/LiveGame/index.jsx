@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
+import axios from 'axios';
+import { connect } from 'react-redux';
+
 import Game from './Game';
 import Board from './Board';
+import Stack from './Stack';
+import Chat from './chat'; // not in use currently
 import '../../styles/livegame.css';
+import { convertCoord } from './gameUtil';
 
 class LiveGame extends Component {
   constructor(props) {
@@ -11,56 +17,44 @@ class LiveGame extends Component {
       game: newGame,
       stone: '',
     };
-    this.toMove = {};
-    this.isMoving = false;
-    this.selectSquare = this.selectSquare.bind(this);
+    this.movePieces = this.movePieces.bind(this);
+    this.handleSquareClick = this.handleSquareClick.bind(this);
     this.selectCapstone = this.selectCapstone.bind(this);
+    
+    const { socket, username } = props;
+    const { game } = this.state;
+    socket.emit('syncGame', username); // Creates new room if not already in one
+    socket.on('playerJoin', (player1, player2) => {
+      game.player1 = player1;
+      game.player2 = player2;
+      game.activePlayer = player1;
+    });
+    socket.on('updateGame', ({ col, row, stone }) => {
+      this.movePieces(col, row, false, stone);
+    });
   }
 
-  selectSquare(col, row) {
-    const newBoard = this.state.game;
-    const stack = newBoard.board[col][row];
-    const { isOccupied } = stack;
-    if (!this.isMoving) {
-      if (!isOccupied) {
-        if (newBoard.pieces[newBoard.toPlay].F !== 0) {
-          stack.place(newBoard.toPlay, this.state.stone);
-          if (this.state.stone === 'C') {
-            newBoard.pieces[newBoard.toPlay].C -= 1;
-            this.setState({ stone: '' });
-          } else {
-            newBoard.pieces[newBoard.toPlay].F -= 1;
-            if (this.state.stone === 'S') this.setState({ stone: '' });
-          }
-          newBoard.toPlay = (newBoard.toPlay === 1) ? 2 : 1;
-        }
-      } else if (isOccupied && (stack.owner === newBoard.toPlay)) {
-        this.toMove.stack = stack.stack.splice(0, newBoard.size);
-        this.toMove.stone = stack.stone;
-        stack.stone = '';
-        stack.owner = stack.stack[0] || 0;
-        stack.isOccupied = 0;
-        this.isMoving = true;
-      }
-    } else if (stack.stone === '') {
-      stack.place(this.toMove.stack.pop());
-      if (!this.toMove.stack.length) {
-        stack.stone = this.toMove.stone;
-        this.toMove = {};
-        this.isMoving = false;
-        newBoard.toPlay = (newBoard.toPlay === 1) ? 2 : 1;
-      }
-    } else if (stack.stone === 'S' &&
-               this.toMove.stone === 'C' &&
-               this.toMove.stack.length === 1) {
-      stack.place(this.toMove.stack.pop(), 'C');
-      this.isMoving = false;
-      newBoard.toPlay = (newBoard.toPlay === 1) ? 2 : 1;
+  movePieces(col, row, isPlayerMove, stone = this.state.stone) {
+    const { game } = this.state;
+    game.selectStack(col, row, stone);
+    if (this.state.stone !== '') {
+      this.setState({
+        stone: '',
+      });
     }
-
     this.setState({
-      game: newBoard,
+      game,
     });
+
+    if (isPlayerMove) {
+      this.props.socket.emit('broadcastGameUpdate', { col, row, stone, game: game.player1 });
+    }
+  }
+
+  handleSquareClick(col, row) {
+    if (this.props.username === this.state.game.activePlayer) {
+      this.movePieces(col, row, true);
+    }
   }
 
   selectCapstone(stone) {
@@ -79,19 +73,34 @@ class LiveGame extends Component {
     }
   }
 
+  winner() {
+    if (this.state.game.victor !== 0) {
+      return <h3>Player {this.state.game.victor} wins!</h3>;
+    }
+  }
+
   render() {
+    const { game, stone } = this.state;
     return (
-      <div className="home game">
-        <div className="board">
-          <Board game={this.state.game} selectSquare={this.selectSquare} />
-          <div className="stone-select">
-            <div className="active-stone">{this.state.stone}</div>
-            <button className="piece" onClick={() => { this.toggleStanding(); }}>
-              { this.state.stone === 'S' ? 'F' : 'S' }({ this.state.game.pieces[1].F })
-            </button>
-            <button className="piece" onClick={() => { this.selectCapstone('C'); }}>
-            C ({this.state.game.pieces[1].C})
-            </button>
+      <div className="main">
+        <div className="home game">
+          <div className="board">
+            <div className="stone-count">
+              Black | F({game.pieces[2].F}) / C({game.pieces[2].C})
+            </div>
+            <div>
+              { this.winner() }
+            </div>
+            <Board game={game} handleSquareClick={this.handleSquareClick} />
+            <div className="stone-select">
+              <div className="active-stone">{stone}</div>
+              <button className="piece" onClick={() => { this.toggleStanding(); }}>
+                { stone === 'S' ? 'F' : 'S' }({ game.pieces[1].F })
+              </button>
+              <button className="piece" onClick={() => { this.selectCapstone('C'); }}>
+              C ({game.pieces[1].C})
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -99,4 +108,10 @@ class LiveGame extends Component {
   }
 }
 
-export default LiveGame;
+const mapStateToProps = (state) => {
+  return {
+    username: state.currentUser
+  };
+}
+
+export default connect(mapStateToProps)(LiveGame);
