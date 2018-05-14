@@ -38,11 +38,11 @@ class Home extends Component {
     });
   }
 
-  handleCreateGame(isPrivate) {
+  handleCreateGame(boardSize, isPrivate) {
     const { socket, username } = this.props;
     socket.emit('createGame', {
       username,
-      boardSize: this.state.size,
+      boardSize,
       isPrivate
     });
     socket.on('gameInitiated', ({ roomId }) => {
@@ -77,8 +77,7 @@ class Home extends Component {
             className="createGame"
             onClick={() =>
               this.setState({
-                createModalOpen: !this.state.createModalOpen,
-                size: this.state.size
+                modalView: ''
               })
             }
           >

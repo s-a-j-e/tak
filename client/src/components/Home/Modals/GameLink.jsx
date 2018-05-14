@@ -17,14 +17,6 @@ class GameLink extends Component {
     // TODO: store game setup options in local state
   }
   render() {
-    const options = [
-      { key: '8', text: '8', value: '8' },
-      { key: '7', text: '7', value: '7' },
-      { key: '6', text: '6', value: '6' },
-      { key: '5', text: '5', value: '5' },
-      { key: '4', text: '4', value: '4' },
-      { key: '3', text: '3', value: '3' }
-    ];
     return (
       <Transition animation={"pulse"} duration={100} visible={true}>
         <Modal

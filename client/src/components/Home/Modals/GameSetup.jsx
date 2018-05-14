@@ -13,9 +13,19 @@ import {
 class GameSetup extends Component {
   constructor(props) {
     super(props);
-
+    this.state = {
+      boardSize: 0
+    }
     // TODO: store game setup options in local state
+    this.handleBoardSizeChange = this.handleBoardSizeChange.bind(this);
   }
+
+  handleBoardSizeChange(e, { value }) {
+    this.setState({
+      boardSize: Number(value)
+    });
+  }
+
   render() {
     const options = [
       { key: '8', text: '8', value: '8' },
@@ -38,9 +48,10 @@ class GameSetup extends Component {
             <Form size={"tiny"} key={"small"} />
             <Form.Field
               control={Select}
-              label="Game Size"
+              label="Board Size"
               options={options}
-              placeholder="Game Size"
+              placeholder="Board Size"
+              onChange={this.handleBoardSizeChange}
             />
           </Modal.Content>
           <Modal.Actions>
@@ -50,7 +61,7 @@ class GameSetup extends Component {
               size="large"
               labelPosition="right"
               content="New Game"
-              onClick={() => this.props.handleCreateGame(true)}
+              onClick={() => this.props.handleCreateGame(this.state.boardSize, true)}
             />
           </Modal.Actions>
         </Modal>
