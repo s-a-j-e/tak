@@ -16,7 +16,7 @@ class GameSetup extends Component {
     this.state = {
       boardSize: 0
     }
-    // TODO: store game setup options in local state
+
     this.handleBoardSizeChange = this.handleBoardSizeChange.bind(this);
   }
 
@@ -61,7 +61,7 @@ class GameSetup extends Component {
               size="large"
               labelPosition="right"
               content="New Game"
-              onClick={() => this.props.handleCreateGame(this.state.boardSize, true)}
+              onClick={() => this.props.handleCreateGame(this.state.boardSize, this.props.gameType === 'friend')}
             />
           </Modal.Actions>
         </Modal>

@@ -35,7 +35,7 @@ class Lobby extends Component {
           <tr className="room">
             <td>
               <Link
-                to="/game"
+                to={`/game/${game.name}`}
                 onClick={() => {
                   this.joinGame(game.name);
                 }}

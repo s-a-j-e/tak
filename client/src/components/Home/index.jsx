@@ -23,10 +23,9 @@ class Home extends Component {
     super(props);
     this.state = {
       modalView: '',
-      createModalOpen: false,
-      friendModalOpen: false,
-      linkModalOpen: false,
-      size: ''
+      gameType: '',
+      url: '',
+      link: ''
     };
     this.handleCreateGame = this.handleCreateGame.bind(this);
     this.changeView = this.changeView.bind(this);
@@ -47,10 +46,10 @@ class Home extends Component {
     });
     socket.on('gameInitiated', ({ roomId }) => {
       let url = `http://localhost:3000/game/${roomId}`;
-      let linkto = `game/${roomId}`;
+      let link = `game/${roomId}`;
       this.setState({
         url,
-        linkto,
+        link,
         modalView: 'GameLink'
       });
     });
@@ -77,7 +76,8 @@ class Home extends Component {
             className="createGame"
             onClick={() =>
               this.setState({
-                modalView: ''
+                modalView: 'GameSetup',
+                gameType: 'general'
               })
             }
           >
@@ -88,15 +88,24 @@ class Home extends Component {
             onClick={() => {
               this.setState({
                 modalView: 'GameSetup',
-                size: 5
+                gameType: 'friend'
               });
             }}
           >
             Play with friend
           </button>
 
-          <GameSetup modalView={this.state.modalView} changeView={this.changeView} handleCreateGame={this.handleCreateGame} />
-          <GameLink modalView={this.state.modalView} changeView={this.changeView} url={this.state.url} linkto={this.state.linkto} />
+          <GameSetup
+            modalView={this.state.modalView}
+            gameType={this.state.gameType}
+            changeView={this.changeView}
+            handleCreateGame={this.handleCreateGame} />
+          <GameLink
+            modalView={this.state.modalView}
+            gameType={this.state.gameType}            
+            changeView={this.changeView}
+            url={this.state.url}
+            link={this.state.link} />
 
           <div className="leaderboard">
             <LeaderboardTable />

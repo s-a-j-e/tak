@@ -11,42 +11,48 @@ import {
   Transition
 } from 'semantic-ui-react';
 
-class GameLink extends Component {
-  constructor(props) {
-    super(props);
-    // TODO: store game setup options in local state
-  }
-  render() {
-    return (
-      <Transition animation={"pulse"} duration={100} visible={true}>
-        <Modal
-          open={this.props.modalView === 'GameLink'}
-          size={"tiny"}
-          closeIcon
-          onClose={() => this.changeView('')}
-        >
-          <Modal.Header>Click the Link Below</Modal.Header>
-          <Modal.Content>
-            <Form size={"tiny"} key={"small"} />
-            <Form.Field>
-              <label>{this.props.url}</label>
-            </Form.Field>
-          </Modal.Content>
-          <Modal.Actions>
-            <Link to={this.props.linkto}>
-              <Button
-                positive
-                icon="gamepad"
-                size="large"
-                labelPosition="right"
-                content="Enter my room"
-              />
-            </Link>
-          </Modal.Actions>
-        </Modal>
-      </Transition>
+const GameLink = ({ modalView, changeView, gameType, url, link }) => {
+  let urlField;
+  let header;
+  if (gameType === 'friend') {
+    urlField = (
+      <Form.Field>
+        <label>{url}</label>
+      </Form.Field>
     );
+    header = 'Click the Link Below';
+  } else {
+    urlField = null;
+    header = 'New Game Created'
   }
+
+  return (
+    <Transition animation={"pulse"} duration={100} visible={true}>
+      <Modal
+        open={modalView === 'GameLink'}
+        size={"tiny"}
+        closeIcon
+        onClose={() => changeView('')}
+      >
+        <Modal.Header>{header}</Modal.Header>
+        <Modal.Content>
+          <Form size={"tiny"} key={"small"} />
+          {urlField}
+        </Modal.Content>
+        <Modal.Actions>
+          <Link to={link}>
+            <Button
+              positive
+              icon="gamepad"
+              size="large"
+              labelPosition="right"
+              content="Enter my room"
+            />
+          </Link>
+        </Modal.Actions>
+      </Modal>
+    </Transition>
+  );
 }
 
 export default GameLink;
