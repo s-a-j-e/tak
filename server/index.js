@@ -119,10 +119,8 @@ io.on('connection', (socket) => {
     room.player1 = username;
     room.boardSize = boardSize;
     room.isPrivate = isPrivate;
-    if (isPrivate) {
-      socket.emit('privateGameInitiated', {
-        roomId
-      });
-    }
+    socket.emit('gameInitiated', {
+      roomId
+    });
   });
 });

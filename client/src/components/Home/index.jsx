@@ -15,16 +15,27 @@ import {
   Transition
 } from 'semantic-ui-react';
 
+import GameSetup from './Modals/GameSetup';
+import GameLink from './Modals/GameLink';
+
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      modalView: '',
       createModalOpen: false,
       friendModalOpen: false,
       linkModalOpen: false,
       size: ''
     };
     this.handleCreateGame = this.handleCreateGame.bind(this);
+    this.changeView = this.changeView.bind(this);
+  }
+
+  changeView(modalView) {
+    this.setState({
+      modalView
+    });
   }
 
   handleCreateGame(isPrivate) {
@@ -34,14 +45,13 @@ class Home extends Component {
       boardSize: this.state.size,
       isPrivate
     });
-    socket.on('privateGameInitiated', ({ roomId }) => {
+    socket.on('gameInitiated', ({ roomId }) => {
       let url = `http://localhost:3000/game/${roomId}`;
       let linkto = `game/${roomId}`;
       this.setState({
         url,
         linkto,
-        friendModalOpen: false,
-        linkModalOpen: true
+        modalView: 'GameLink'
       });
     });
   }
@@ -74,42 +84,11 @@ class Home extends Component {
           >
             Create Game
           </button>
-
-          <Transition animation={"pulse"} duration={100} visible={true}>
-            <Modal
-              open={this.state.createModalOpen}
-              size={"tiny"}
-              closeIcon
-              onClose={() => this.setState({ createModalOpen: false })}
-            >
-              <Modal.Header>Create a game</Modal.Header>
-              <Modal.Content>
-                <Form size={"tiny"} key={"small"} />
-                <Form.Field
-                  control={Select}
-                  label="Game Size"
-                  options={options}
-                  placeholder="Game Size"
-                />
-              </Modal.Content>
-              <Modal.Actions>
-                <Link to="/game">
-                  <Button
-                    positive
-                    icon="gamepad"
-                    size="large"
-                    labelPosition="right"
-                    content="Start"
-                  />
-                </Link>
-              </Modal.Actions>
-            </Modal>
-          </Transition>
           <button
             className="createGame"
             onClick={() => {
               this.setState({
-                friendModalOpen: !this.state.friendModalOpen,
+                modalView: 'GameSetup',
                 size: 5
               });
             }}
@@ -117,62 +96,8 @@ class Home extends Component {
             Play with friend
           </button>
 
-          <Transition animation={"pulse"} duration={100} visible={true}>
-            <Modal
-              open={this.state.friendModalOpen}
-              size={"tiny"}
-              onClose={() => this.setState({ friendModalOpen: false })}
-              closeIcon
-            >
-              <Modal.Header>Play with a friend</Modal.Header>
-              <Modal.Content>
-                <Form size={"tiny"} key={"small"} />
-                <Form.Field
-                  control={Select}
-                  label="Game Size"
-                  options={options}
-                  placeholder="Game Size"
-                />
-              </Modal.Content>
-              <Modal.Actions>
-                <Button
-                  positive
-                  icon="gamepad"
-                  size="large"
-                  labelPosition="right"
-                  content="New Game"
-                  onClick={() => this.handleCreateGame(true)}
-                />
-              </Modal.Actions>
-            </Modal>
-          </Transition>
-          <Transition animation={"pulse"} duration={100} visible={true}>
-            <Modal
-              open={this.state.linkModalOpen}
-              size={"tiny"}
-              closeIcon
-              onClose={() => this.setState({ linkModalOpen: false })}
-            >
-              <Modal.Header>Click the Link Below</Modal.Header>
-              <Modal.Content>
-                <Form size={"tiny"} key={"small"} />
-                <Form.Field>
-                  <label>{this.state.url}</label>
-                </Form.Field>
-              </Modal.Content>
-              <Modal.Actions>
-                <Link to={this.state.linkto}>
-                  <Button
-                    positive
-                    icon="gamepad"
-                    size="large"
-                    labelPosition="right"
-                    content="Enter my room"
-                  />
-                </Link>
-              </Modal.Actions>
-            </Modal>
-          </Transition>
+          <GameSetup modalView={this.state.modalView} changeView={this.changeView} handleCreateGame={this.handleCreateGame} />
+          <GameLink modalView={this.state.modalView} changeView={this.changeView} url={this.state.url} linkto={this.state.linkto} />
 
           <div className="leaderboard">
             <LeaderboardTable />
