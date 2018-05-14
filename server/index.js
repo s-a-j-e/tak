@@ -64,12 +64,16 @@ io.on('connection', (socket) => {
 
   socket.on('syncGame', async ({ username, roomId }) => {
     // Only creates new game if not already in one
-    const room = io.socket.adapter.rooms[roomId];
+    const room = io.sockets.adapter.rooms[roomId];
     if (username !== room.player1) {
       if (!room.player2) {
         await socket.join(roomId);
         room.player2 = username;
-        io.in(roomId).emit('playerJoin');
+        io.in(roomId).emit('playerJoin', {
+          boardSize: room.boardSize,
+          player1: room.player1,
+          player2: room.player2
+        });
       } else if (room.isPrivate) {
         socket.emit('fullRoom');
       } else {
@@ -90,8 +94,8 @@ io.on('connection', (socket) => {
   });
 
   // Update game for each piece move
-  socket.on('broadcastGameUpdate', data => {
-    socket.to(data.game).emit('updateGame', data);
+  socket.on('updateGame', ({ col, row, stone, roomId }) => {
+    socket.to(roomId).emit('opponentMove', { col, row, stone });
   });
 
   // Serve pending game list to lobby on lobby initialize
@@ -109,7 +113,7 @@ io.on('connection', (socket) => {
 
   // Create a new game
   socket.on('createGame', async ({ username, boardSize, isPrivate }) => {
-    const roomId = Math.random().toString(36).splice(2, 9);
+    const roomId = Math.random().toString(36).slice(2, 9);
     await socket.join(roomId);
     const room = io.sockets.adapter.rooms[roomId];
     room.player1 = username;

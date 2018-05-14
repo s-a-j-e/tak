@@ -18,6 +18,7 @@ import {
   Select,
   Transition
 } from 'semantic-ui-react';
+
 class LiveGame extends Component {
   constructor(props) {
     super(props);
@@ -32,13 +33,13 @@ class LiveGame extends Component {
     this.selectCapstone = this.selectCapstone.bind(this);
 
     const { socket, username } = props;
-    const { room } = props.match.params;
-    const { game } = this.state;
+    const { roomId } = props.match.params;
     socket.emit('syncGame', {
       username,
-      room
+      roomId
     });
-    socket.on('playerJoin', (player1, player2) => {
+    socket.on('playerJoin', ({ boardSize, player1, player2 }) => {
+      const game = new Game(boardSize);
       game.player1 = player1;
       game.player2 = player2;
       game.activePlayer = player1;
@@ -46,7 +47,7 @@ class LiveGame extends Component {
         game
       });
     });
-    socket.on('updateGame', ({ col, row, stone }) => {
+    socket.on('opponentMove', ({ col, row, stone }) => {
       this.movePieces(col, row, false, stone);
     });
   }
@@ -64,11 +65,11 @@ class LiveGame extends Component {
     });
 
     if (isPlayerMove) {
-      this.props.socket.emit('broadcastGameUpdate', {
+      this.props.socket.emit('updateGame', {
         col,
         row,
         stone,
-        game: game.player1
+        roomId: this.props.match.params.roomId
       });
     }
   }

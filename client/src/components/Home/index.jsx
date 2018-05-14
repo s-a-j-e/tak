@@ -3,6 +3,7 @@ import Lobby from './lobby';
 import LeaderboardTable from '../../containers/Home/leaderboard_table';
 import LobbyTable from '../../containers/Home/lobby_table';
 import { Link, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import {
   Input,
   Button,
@@ -23,18 +24,19 @@ class Home extends Component {
       linkModalOpen: false,
       size: ''
     };
+    this.handleCreateGame = this.handleCreateGame.bind(this);
   }
 
-  handlePlayWithFriends() {
-    const { socket } = this.props;
+  handleCreateGame(isPrivate) {
+    const { socket, username } = this.props;
     socket.emit('createGame', {
-      username: '', // TODO: Grab username from redux store
-      size: this.state.size,
-      friendly: true
+      username,
+      boardSize: this.state.size,
+      isPrivate
     });
-    socket.on('friendGameInitiated', function(data) {
-      let url = `http://localhost:3000/game/${data.roomName}`;
-      let linkto = `private/${data.roomName}`;
+    socket.on('privateGameInitiated', ({ roomId }) => {
+      let url = `http://localhost:3000/game/${roomId}`;
+      let linkto = `game/${roomId}`;
       this.setState({
         url,
         linkto,
@@ -106,7 +108,6 @@ class Home extends Component {
           <button
             className="createGame"
             onClick={() => {
-              console.log(!this.state.friendModalOpen);
               this.setState({
                 friendModalOpen: !this.state.friendModalOpen,
                 size: 5
@@ -140,7 +141,7 @@ class Home extends Component {
                   size="large"
                   labelPosition="right"
                   content="New Game"
-                  onClick={() => this.handlePlayWithFriends(this.state.size)}
+                  onClick={() => this.handleCreateGame(true)}
                 />
               </Modal.Actions>
             </Modal>
@@ -182,4 +183,10 @@ class Home extends Component {
   }
 }
 
-export default withRouter(Home);
+const mapStateToProps = (state) => {
+  return {
+    username: state.currentUser
+  };
+};
+
+export default withRouter(connect(mapStateToProps)(Home));
