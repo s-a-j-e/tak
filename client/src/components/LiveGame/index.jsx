@@ -21,10 +21,9 @@ import {
 class LiveGame extends Component {
   constructor(props) {
     super(props);
-    const newGame = new Game(5);
     this.state = {
       isOpen: true,
-      game: newGame,
+      game: {},
       stone: '',
       user: props.currentUser
     };
@@ -33,8 +32,12 @@ class LiveGame extends Component {
     this.selectCapstone = this.selectCapstone.bind(this);
 
     const { socket, username } = props;
+    const { room } = props.match.params;
     const { game } = this.state;
-    socket.emit('syncGame', username); // Creates new room if not already in one
+    socket.emit('syncGame', {
+      username,
+      room
+    });
     socket.on('playerJoin', (player1, player2) => {
       game.player1 = player1;
       game.player2 = player2;
@@ -45,15 +48,6 @@ class LiveGame extends Component {
     });
     socket.on('updateGame', ({ col, row, stone }) => {
       this.movePieces(col, row, false, stone);
-    });
-
-    // Join an existing game. Emit the joinGame event.
-    const roomID = this.props.location.pathname.split('/').pop();
-    socket.emit('joinFriendGame', { room: roomID });
-    socket.on('err', data => {
-      this.setState({
-        message: data.message
-      });
     });
   }
 
@@ -152,6 +146,9 @@ class LiveGame extends Component {
       );
     }
 
+    if (!game) {
+      return <div></div>
+    }
     return (
       <div className="main">
         <div className="home game">

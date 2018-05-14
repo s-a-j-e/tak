@@ -15,32 +15,35 @@ import {
 } from 'semantic-ui-react';
 
 class Home extends Component {
-  state = {
-    createModalOpen: false,
-    friendModalOpen: false,
-    linkModalOpen: false,
-    size: ''
-  };
-  handlePlayWithFriends = username => {
+  constructor(props) {
+    super(props);
+    this.state = {
+      createModalOpen: false,
+      friendModalOpen: false,
+      linkModalOpen: false,
+      size: ''
+    };
+  }
+
+  handlePlayWithFriends() {
     const { socket } = this.props;
-    const self = this;
-    //get username send to server socket to create a game
-    socket.emit('createGameWithFriend', {
-      size: self.state.size
+    socket.emit('createGame', {
+      username: '', // TODO: Grab username from redux store
+      size: this.state.size,
+      friendly: true
     });
-    socket.on('newGame', function(data) {
-      console.log('roomNmae', data.roomName);
-      let url = `http://localhost:3000/private/${data.roomName}`;
+    socket.on('friendGameInitiated', function(data) {
+      let url = `http://localhost:3000/game/${data.roomName}`;
       let linkto = `private/${data.roomName}`;
-      self.setState({
+      this.setState({
         url,
         linkto,
         friendModalOpen: false,
         linkModalOpen: true
       });
-      //self.props.history.push(linkto);
     });
-  };
+  }
+
   render() {
     const options = [
       { key: '8', text: '8', value: '8' },
