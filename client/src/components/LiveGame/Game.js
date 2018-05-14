@@ -25,6 +25,11 @@ class Game {
     this.moveOrigin = {};
     this.step = {};
     this.moveDir = '';
+    this.isBoardFull = false;
+    this.p1TotalFlatsCnt = 0;
+    this.p2TotoalFlatsCnt = 0;
+    this.victorUsername = 'Nobody'; // Wining Player Username or 'Nobody'
+    this.looserUsername = 'Nobody'; // Loosing Player Username or 'Nobody'
   }
 
   createBoard(size) {
@@ -73,6 +78,10 @@ class Game {
               this.pieces[this.toPlay].F -= 1;
             }
             this.checkRoads();
+            this.checkFullBoardWins();
+            if(this.pieces[this.toPlay].total === 0){ 
+              this.checkOutOfPiecesWins(); 
+            }
             this.toPlay = (this.toPlay === 1) ? 2 : 1;
             this.activePlayer = (this.activePlayer === this.player1) ? this.player2 : this.player1;
           }
@@ -125,7 +134,7 @@ class Game {
         if (this.toMove.stack.length === 1 && this.toMove.stone === 'C') {
           Object.keys(this.moveOrigin.neighbors)
             .forEach((dir) => {
-              if (stack.neighbors[dir].stone === 'S') {
+              if (stack.neighbors[dir] && stack.neighbors[dir].stone === 'S') {
                 stack.neighbors[dir].validMove = true;
               }
             });
@@ -170,6 +179,8 @@ class Game {
       if ((checkNS && square.edges.includes('+')) ||
           (checkEW && square.edges.includes('>'))) {
         this.victor = p;
+        this.victorUsername = (this.victor === 1) ? this.player1 : this.player2;
+        this.looserUsername = (this.victor === 1) ? this.player2 : this.player1;
         this.winType = 'R';
       } else {
         checked.push(square.coord);
@@ -209,6 +220,52 @@ class Game {
         followRoad(this.board[1][row], player);
       }
     }
+  }
+
+  checkFullBoardWins(){
+    let isOccupiedCnt = 0;
+    let p1FCnt = 0;
+    let p2FCnt =0;
+    
+    Object.values(this.squares).forEach(square => {
+      if(square.isEmpty === false){
+        isOccupiedCnt++;
+        if(square.owner === 1 && square.stone === ''){
+          p1FCnt++;
+        }
+        if(square.owner === 2 && square.stone === ''){
+          p2FCnt++;
+        }
+      } 
+    })
+    this.p1TotalFlatsCnt = p1FCnt;
+    this.p2TotoalFlatsCnt = p2FCnt;
+    if( isOccupiedCnt === (this.size * this.size)){
+      this.isBoardFull = true;
+      if(this.p1TotalFlatsCnt === this.p2TotoalFlatsCnt){
+        this.victor = 0;
+        this.winType = '1/2';
+      } else {
+        this.victor = this.p1TotalFlatsCnt > this.p2TotoalFlatsCnt ? 1 : 2;
+        this.victorUsername = (this.victor === 1) ? this.player1 : this.player2;
+        this.looserUsername = (this.victor === 1) ? this.player2 : this.player1;
+        this.winType = 'F';
+      }
+    }
+    return;
+  }
+
+  checkOutOfPiecesWins(){
+    if(this.p1TotalFlatsCnt === this.p2TotoalFlatsCnt){
+      this.victor = 0;
+      this.winType = '1/2';
+    } else {
+      this.victor = this.p1TotalFlatsCnt > this.p2TotoalFlatsCnt ? 1 : 2;
+      this.victorUsername = (this.victor === 1) ? this.player1 : this.player2;
+      this.looserUsername = (this.victor === 1) ? this.player2 : this.player1;
+      this.winType = 'F';
+    }
+    return;
   }
 }
 

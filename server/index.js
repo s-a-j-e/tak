@@ -121,5 +121,12 @@ io.on('connection', (socket) => {
     socket.emit('gameInitiated', {
       roomId
     });
+
+  //Chat/Typing
+  socket.on("chat", function(data) {
+    io.sockets.emit("chat", data);
+  });
+  socket.on("typing", function(data) {
+    socket.broadcast.emit("typing", data);
   });
 });

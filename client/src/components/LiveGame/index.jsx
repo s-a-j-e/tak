@@ -18,6 +18,7 @@ import {
   Select,
   Transition
 } from 'semantic-ui-react';
+import sound_brick_drop from "./Sounds/brick_drop_concrete.wav";
 
 class LiveGame extends Component {
   constructor(props) {
@@ -97,8 +98,42 @@ class LiveGame extends Component {
   }
 
   winner() {
-    if (this.state.game.victor !== 0) {
-      return <h3>{this.state.game[`player${this.state.game.victor}`]} wins!</h3>;
+    let winner = this.state.game.victorUsername;
+    let loser = this.state.game.looserUsername;
+    if (this.state.game.winType === '1/2') {
+      return <h3>{`It's a Draw! ${winner} wins!`}</h3>;
+    }
+    else if (this.state.game.winType === '1/2' && this.state.game.isBoardFull){
+      return (
+        <div>
+          <h3>Board is Full <br/></h3>
+          <h3>{`It's a Draw! ${winner} wins!`}</h3>
+        </div>
+      );
+    } else if (this.state.game.winType === "R") {
+      return (
+        <div>
+          <h3>Road Complited <br/></h3>
+          <h3>{`Player ${winner} wins! & Player ${loser} lost!`}</h3>
+        </div>
+      );
+    } else if (this.state.game.winType === "F" && this.state.game.isBoardFull) {
+      return (
+        <div>
+          <h3>Board is Full <br/></h3>
+          <h3>{`Player ${winner} wins! & Player ${loser} lost!`}</h3>
+        </div>
+      );
+    } else if (this.state.game.winType === "F") {
+      return (
+        <div>
+          <h3>A Player Ran Out of Pieces <br/></h3>
+          <h3>{`Player ${winner} wins! & Player ${loser} lost!`}</h3>
+        </div>
+      );
+    }
+    else if (this.state.game.winType !== null) {
+      return <h3>{`Player ${winner} wins! & Player ${loser} lost!`}</h3>;
     }
   }
 
@@ -151,14 +186,16 @@ class LiveGame extends Component {
       return <div></div>
     }
     return (
-      <div className="main">
-        <div className="home game">
-          <div className="board">
+      <div className="takless">
+        <div className="main">
+          <div className="game">
             <div className="stone-count">
-            {OpponentPieces}
+              {OpponentPieces}
             </div>
             <div>{this.winner()}</div>
-            <Board game={game} handleSquareClick={this.handleSquareClick} />
+            <div className="board">
+              <Board game={game} handleSquareClick={this.handleSquareClick} />
+            </div>
             <div className="stone-select">
               <div className="active-stone">{stone}</div>
               <h4>{username}</h4>

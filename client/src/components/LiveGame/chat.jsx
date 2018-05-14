@@ -10,10 +10,10 @@ class Chat extends Component {
       typing: ''
     };
 
-
-    const { socket } = props
-    socket.on('typing', function(data) {
-      self.setState({ typing: data.author + ' is typing...' });
+    var self = this;
+    const { socket } = props;
+    socket.on("typing", function(data) {
+      self.setState({ typing: data.author + " is typing..." });
     });
 
     socket.on('chat', function(data) {
@@ -26,17 +26,32 @@ class Chat extends Component {
 
     this.sendMessage = ev => {
       ev.preventDefault();
-      socket.emit('chat', {
-        author: this.props.username,
-        message: this.state.message
-      });
-      this.setState({ message: '' });
+      if (this.state.message) {
+        const roomID = this.props.location.pathname.split("/").pop();
+
+        socket.emit("chat", {
+          author: this.props.username,
+          message: this.state.message,
+          room: roomID
+        });
+        this.setState({ message: "" });
+      }
     };
 
     this.handleTyping = () => {
-      socket.emit('typing', {
+      socket.emit("typing", {
         author: this.props.username
       });
+    };
+    this.handleTak = ev => {
+      const roomID = this.props.location.pathname.split("/").pop();
+      ev.preventDefault();
+      socket.emit("chat", {
+        author: this.props.username,
+        message: "TAK",
+        room: roomID
+      });
+      this.setState({ message: "" });
     };
   }
   render() {
