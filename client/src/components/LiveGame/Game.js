@@ -9,7 +9,7 @@ class Game {
     this.player1 = null;
     this.player2 = null;
     this.victor = 0; // 0, 1, or 2
-    this.winType = null; // null, R, F, 1 or 1/2
+    this.winType = null; // null, R, F, T, 1 or 1/2
     this.winString = '';
     this.ranked = ranked;
     this.size = size;
@@ -48,6 +48,8 @@ class Game {
       this.tps = tps;
       this.ptn = ptn;
     }
+
+    this.timeOut = this.timeOut.bind(this);
   }
 
   createBoard(size) {
@@ -422,6 +424,15 @@ class Game {
       ptn: ptnString,
       ranked,
     });
+  }
+
+  // the player timeouts, he loses
+  timeOut(player){
+    this.victor = player === this.player1 ? 2 : 1;
+    this.victorUsername = (this.victor === 1) ? this.player1 : this.player2;
+    this.loserUsername = (this.victor === 1) ? this.player2 : this.player1;
+    this.winType = 'T';
+    this.setWinString();
   }
 }
 

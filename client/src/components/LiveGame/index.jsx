@@ -8,7 +8,8 @@ import Game from "./Game";
 import Board from "./Board";
 import Stack from "./Stack";
 import Chat from "./chat"; // not in use currently
-import PTN from "./PTN"
+import PTN from "./PTN";
+import Clock from "./Clock";
 import "../../styles/livegame.css";
 import { convertCoord } from "./gameUtil";
 import {
@@ -26,15 +27,19 @@ class LiveGame extends Component {
   constructor(props) {
     super(props);
     const newGame = new Game(6);
+   
     this.state = {
       game: newGame,
       stone: "",
       isOpen: true,
       user: props.currentUser,
+      myCounter: false,
+      opponentCounter: false
     };
     this.movePieces = this.movePieces.bind(this);
     this.handleSquareClick = this.handleSquareClick.bind(this);
     this.selectCapstone = this.selectCapstone.bind(this);
+    this.timeOut = this.timeOut.bind(this);
 
     const { socket, username } = props;
     const { roomId } = props.match.params;
@@ -47,9 +52,26 @@ class LiveGame extends Component {
       game.player1 = player1;
       game.player2 = player2;
       game.activePlayer = player1;
+
+      let shouldStartMyCounter = false;
+      let shouldStartOpponentCounter = false;
+      if(this.props.username === game.activePlayer){
+        shouldStartMyCounter = true;
+        shouldStartOpponentCounter = false;
+      }
+      else{
+        shouldStartMyCounter = false;
+        shouldStartOpponentCounter = true;
+      }
+
       this.setState({
-        game
+        game,
+        myCounter: shouldStartMyCounter,
+        opponentCounter: shouldStartOpponentCounter
       });
+
+
+
     });
     socket.on("opponentMove", ({ col, row, stone, roomId }) => {
       if (roomId === props.match.params.roomId) {
@@ -81,6 +103,26 @@ class LiveGame extends Component {
         roomId: this.props.match.params.roomId,
       });
     }
+
+    // logic for the timers
+    if(game.winType){
+      this.setState({
+        myCounter: false,
+        opponentCounter: false
+      })
+      return
+    }
+
+    if(game.activePlayer !== this.props.username)
+      this.setState({
+        myCounter: false,
+        opponentCounter: true
+      })
+    else
+      this.setState({
+        myCounter: true,
+        opponentCounter: false
+      })
   }
 
   handleSquareClick(col, row) {
@@ -108,7 +150,7 @@ class LiveGame extends Component {
 
   winner() {
     let winner = this.state.game.victorUsername;
-    let loser = this.state.game.looserUsername;
+    let loser = this.state.game.loserUsername;
     if (this.state.game.winType === '1/2') {
       return <p>{`It's a Draw! ${winner} wins!`}</p>;
     }
@@ -140,6 +182,14 @@ class LiveGame extends Component {
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
       );
+    } else if (this.state.game.winType === "T") {
+      // timeout situation
+      return (
+        <div>
+          <p>{`Player ${loser} an out of time`}<br/></p>
+          <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
+        </div>
+      );
     }
     else if (this.state.game.winType !== null) {
       return <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>;
@@ -160,6 +210,23 @@ class LiveGame extends Component {
       return <div className="to-play">Your turn</div>;
     }
     return <div className="to-play" />;
+  }
+
+
+  //play sounds function
+  play(src) {
+    var sound = new Audio(this.sounds[src]);
+    sound.play();
+  }
+
+  timeOut(player){
+    let game = this.state.game
+    game.timeOut(player);
+    this.setState({
+      game,
+      myCounter: false,
+      opponentCounter: false
+    })
   }
 
   render() {
@@ -204,6 +271,9 @@ class LiveGame extends Component {
     return (
       <div className="takless">
         <div className="game-info">
+          <div>
+            <Clock player= {this.props.username} shouldCount = {this.state.myCounter} timeOut = {this.timeOut}/>
+          </div>
           <div>{this.winner()}</div>
           {this.opponentTurn()}
           <table>
@@ -214,6 +284,10 @@ class LiveGame extends Component {
             {PlayerPieces}
           </table>
           {this.userTurn()}
+          <div>
+            {/*Opponent's clock*/}
+            <Clock player= {opponentName} shouldCount = {this.state.opponentCounter} timeOut = {this.timeOut}/>
+          </div>
         </div>
         <div className="main">
           <div className="game">
@@ -236,11 +310,6 @@ class LiveGame extends Component {
     );
   }
 
-  //play sounds function
-  play(src) {
-    var sound = new Audio(this.sounds[src]);
-    sound.play();
-  }
 }
 
 const mapStateToProps = state => {
