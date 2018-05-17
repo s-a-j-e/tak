@@ -3,21 +3,37 @@ import React, { Component } from "react";
 class Clock extends Component {
   constructor(props) {
     super(props);
-    this.owner = props.player
-    this.state = { seconds: 5};
+    this.owner = props.player;
+
+    if (props.time) {
+      this.state = { seconds: props.time, removed: false };
+    } else {
+      this.state = { seconds: 0, removed: false };
+    }
     this.timer = 0;
     this.start = this.start.bind(this);
     this.countDown = this.countDown.bind(this);
   }
+  // called when one of the props changed and call the render function
+  static getDerivedStateFromProps(nextProps, prevState) {
+    let currentState = {};
 
-  // componentDidUpdate() {
-  //   console.log(this.timer);
-  //   console.log("not my turn", !this.props.player1Counter);
-  //   if (this.props.player1Counter) {
-  //     console.log("ahhha");
-  //     clearInterval(this.timer);
-  //   }
-  // }
+    // set the new value for the timer to the current state
+    if (prevState.seconds === 0 && nextProps.time) {
+      currentState.seconds = nextProps.time;
+    }
+
+    // update the remove flag to the current state
+    if (prevState.removed !== nextProps.removed) {
+      currentState.removed = nextProps.removed;
+    }
+
+    if (currentState) {
+      console.log("Current state", currentState);
+      return currentState;
+    }
+    return null;
+  }
 
   start() {
     if (this.timer === 0) {
@@ -25,14 +41,13 @@ class Clock extends Component {
     }
   }
 
-  pause(){
-    if (this.timer)
-      clearInterval(this.timer)
+  pause() {
+    if (this.timer) clearInterval(this.timer);
 
-    this.timer = 0
+    this.timer = 0;
   }
 
-  countDown() {        
+  countDown() {
     // Check if we're at zero.
     if (this.state.seconds == 0) {
       clearInterval(this.timer);
@@ -43,7 +58,6 @@ class Clock extends Component {
       seconds: this.state.seconds - 1
     });
   }
-
 
   formatSeconds(totalSeconds) {
     var seconds = totalSeconds % 60;
@@ -60,12 +74,18 @@ class Clock extends Component {
     return { m: minutes, s: seconds };
   }
 
-  render() {    
-    let format_time = this.formatSeconds(this.state.seconds)
-    if(this.props.shouldCount)
-      this.start()
-    else
-      this.pause()
+  render() {
+    if (this.state.removed) {
+      this.pause();
+      return "";
+    }
+
+    let format_time = this.formatSeconds(this.state.seconds);
+    if (this.props.shouldCount) {
+      this.start();
+    } else {
+      this.pause();
+    }
 
     return (
       <div>

@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import {
   Input,
   Button,
@@ -9,30 +10,59 @@ import {
   Form,
   Select,
   Transition
-} from 'semantic-ui-react';
+} from "semantic-ui-react";
 
-const GameLink = ({ modalView, changeView, gameType, url, link }) => {
-  let urlField;
-  let header;
-  if (gameType === 'friend') {
-    urlField = (
-      <Form.Field>
-        <label>{url}</label>
-      </Form.Field>
-    );
-    header = 'Click the Link Below';
-  } else {
-    urlField = null;
-    header = 'New Game Created'
+class GameLink extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      copied: false,
+      time: ""
+    };
   }
+  render() {
+    console.log("!!!this.props.time", this.props.time);
+    const { modalView, changeView, gameType, url, link } = this.props;
+    let urlField;
+    let header;
+    if (gameType === "friend") {
+      urlField = (
+        <div>
+          <div>
+            <Form.Field>
+              <label>{url}</label>
+              <CopyToClipboard
+                text={url}
+                onCopy={() => this.setState({ copied: true })}
+              >
+                <span>
+                  <Icon name="paste" size="large" />
+                </span>
+              </CopyToClipboard>
+            </Form.Field>
+          </div>
+          <div id="copied">
+            {this.state.copied ? "copied" : "Click to copy"}
+          </div>
+        </div>
+      );
+      header = "Click the Link Below";
+    } else {
+      urlField = (
+        <Form.Field>
+          <label>Game is created!</label>
+        </Form.Field>
+      );
+      header = "New Game Created";
+    }
 
-  return (
+    return (
       <Modal
-        open={modalView === 'GameLink'}
+        open={modalView === "GameLink"}
         size={"tiny"}
         closeIcon
         dimmer={false}
-        onClose={() => changeView('')}
+        onClose={() => changeView("")}
       >
         <Modal.Header>{header}</Modal.Header>
         <Modal.Content>
@@ -40,7 +70,7 @@ const GameLink = ({ modalView, changeView, gameType, url, link }) => {
           {urlField}
         </Modal.Content>
         <Modal.Actions>
-          <Link to={link}>
+          <Link to={{ pathname: link, query: this.props.time }}>
             <Button
               positive
               icon="gamepad"
@@ -51,7 +81,8 @@ const GameLink = ({ modalView, changeView, gameType, url, link }) => {
           </Link>
         </Modal.Actions>
       </Modal>
-  );
+    );
+  }
 }
 
 export default GameLink;

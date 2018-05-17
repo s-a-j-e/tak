@@ -1,24 +1,26 @@
-import { combineReducers } from 'redux';
-import initialState from '../initialState';
-import action from '../actions/actions';
-import { LOGGEDIN, TOGGLE_LOGIN_LOGOUT } from '../actions/types';
+import { combineReducers } from "redux";
+import initialState from "../initialState";
+import action from "../actions/actions";
+import { LOGGEDIN, TOGGLE_LOGIN_LOGOUT } from "../actions/types";
 
 const rootReducer = (state = initialState, action) => {
-   switch (action.type) {
+  switch (action.type) {
     case LOGGEDIN:
       let usernameOrEmail = action.payload;
       return {
-        ...state, 
+        ...state,
         currentUser: usernameOrEmail
       };
     case TOGGLE_LOGIN_LOGOUT:
-      return { 
-        ...state, 
+      return {
+        ...state,
         isLoggedIn: action.payload
       };
+    case "SET_TIME":
+      return { ...state, time: action.payload };
     default:
       return state;
-   }
+  }
 };
 
 export default rootReducer;

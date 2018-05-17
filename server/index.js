@@ -8,7 +8,7 @@ const socket = require("socket.io");
 require("dotenv").config();
 
 const db = require("../database");
-const { logGame } = require("../database/queries")
+const { logGame } = require("../database/queries");
 const authRoutes = require("./routes/authRoutes");
 
 const app = express();
@@ -41,7 +41,7 @@ const authCheck = (req, res, next) => {
 
 app.use("/", express.static(path.join(__dirname, "../client/dist")));
 
-app.post('/record', (req, res) => {
+app.post("/record", (req, res) => {
   logGame(req.body);
 });
 
@@ -62,23 +62,24 @@ const server = app.listen(PORT, () => {
 let rooms = 0;
 const io = socket(server);
 
-io.on('connection', (socket) => {
+io.on("connection", socket => {
   socket.leave(socket.id);
 
-  socket.on('syncGame', async ({ username, roomId }) => {
+  socket.on("syncGame", async ({ username, roomId }) => {
     // Only creates new game if not already in one
     const room = io.sockets.adapter.rooms[roomId];
     if (username !== room.player1) {
       if (!room.player2) {
         await socket.join(roomId);
         room.player2 = username;
-        io.in(roomId).emit('playerJoin', {
+        io.in(roomId).emit("playerJoin", {
           boardSize: room.boardSize,
           player1: room.player1,
-          player2: room.player2
+          player2: room.player2,
+          time: room.time
         });
       } else if (room.isPrivate) {
-        socket.emit('fullRoom');
+        socket.emit("fullRoom");
       } else {
         socket.join(roomId);
       }
@@ -93,16 +94,16 @@ io.on('connection', (socket) => {
         pendingGames.push({ ...currentRoom, name: room });
       }
     }
-    socket.broadcast.emit('updateLobby', pendingGames);
+    socket.broadcast.emit("updateLobby", pendingGames);
   });
 
   // Update game for each piece move
-  socket.on('updateGame', ({ col, row, stone, roomId }) => {
-    socket.to(roomId).emit('opponentMove', { col, row, stone, roomId });
+  socket.on("updateGame", ({ col, row, stone, roomId }) => {
+    socket.to(roomId).emit("opponentMove", { col, row, stone, roomId });
   });
 
   // Serve pending game list to lobby on lobby initialize
-  socket.on('fetchLobby', () => {
+  socket.on("fetchLobby", () => {
     const games = [];
     const { rooms } = io.sockets.adapter;
     for (let room in rooms) {
@@ -111,18 +112,23 @@ io.on('connection', (socket) => {
         games.push({ ...currentRoom, name: room });
       }
     }
-    socket.emit('updateLobby', games);
+    socket.emit("updateLobby", games);
   });
 
   // Create a new game
-  socket.on('createGame', async ({ username, boardSize, isPrivate }) => {
-    const roomId = Math.random().toString(36).slice(2, 9);
+  socket.on("createGame", async ({ time, username, boardSize, isPrivate }) => {
+    console.log("server time", time);
+    const roomId = Math.random()
+      .toString(36)
+      .slice(2, 9);
     await socket.join(roomId);
     const room = io.sockets.adapter.rooms[roomId];
     room.player1 = username;
     room.boardSize = boardSize;
     room.isPrivate = isPrivate;
-    socket.emit('gameInitiated', {
+    room.time = time;
+
+    socket.emit("gameInitiated", {
       roomId
     });
   });
