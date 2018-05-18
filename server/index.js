@@ -149,7 +149,7 @@ io.on("connection", socket => {
     const { player1, player2 } = room;
     if (username === player1) {
       if (!player2) {
-        socket.emit("pendingGame", { boardSize, roomId });
+        socket.emit("pendingGame", { time, boardSize, roomId });
       } else {
         io.to(roomId).emit("syncGame", {
           boardSize,
@@ -162,6 +162,7 @@ io.on("connection", socket => {
         });
       }
     } else if (!player2) {
+      //create player 2
       await socket.join(roomId);
       room.player2 = username;
       io.to(roomId).emit("syncGame", {

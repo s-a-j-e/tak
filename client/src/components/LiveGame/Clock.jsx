@@ -4,9 +4,7 @@ class Clock extends Component {
   constructor(props) {
     super(props);
     this.owner = props.player;
-
-    this.state = { seconds: 0 };
-
+    this.state = { seconds: undefined };
     this.timer = 0;
     this.start = this.start.bind(this);
     this.countDown = this.countDown.bind(this);
@@ -14,7 +12,7 @@ class Clock extends Component {
   // called when one of the props changed and call the render function
   static getDerivedStateFromProps(nextProps, prevState) {
     // set the new value for the timer to the current state
-    if (prevState.seconds === 0 && nextProps.time) {
+    if (prevState.seconds === undefined && nextProps.time) {
       return {
         seconds: nextProps.time
       };
@@ -37,9 +35,10 @@ class Clock extends Component {
 
   countDown() {
     // Check if we're at zero.
-    if (this.state.seconds == 0) {
+    if (this.state.seconds === 0) {
       clearInterval(this.timer);
       this.props.timeOut(this.owner);
+      return;
     }
 
     this.setState({
@@ -48,6 +47,9 @@ class Clock extends Component {
   }
 
   formatSeconds(totalSeconds) {
+    if (!totalSeconds) {
+      return { m: "00", s: "00" };
+    }
     var seconds = totalSeconds % 60;
     var minutes = Math.floor(totalSeconds / 60);
 

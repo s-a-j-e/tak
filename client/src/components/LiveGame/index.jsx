@@ -33,6 +33,7 @@ class LiveGame extends Component {
       stone: "",
       isOpen: true,
       user: props.currentUser,
+
       myCounter: false,
       opponentCounter: false
     };
@@ -64,17 +65,28 @@ class LiveGame extends Component {
           const game = new Game(boardSize, gameState, player1, player2);
           game.activePlayer = activePlayer;
           game.time = time;
+
           this.setState({
             game,
-            time: game.time,
-            myCounter: true,
-            opponentCounter: false
+            time: game.time
           });
+
+          if (this.props.username === game.activePlayer) {
+            this.setState({
+              myCounter: true,
+              opponentCounter: false
+            });
+          } else {
+            this.setState({
+              myCounter: false,
+              opponentCounter: true
+            });
+          }
         }
       }
     );
 
-    socket.on("pendingGame", ({ boardSize, roomId }) => {
+    socket.on("pendingGame", ({ time, boardSize, roomId }) => {
       if (roomId === props.match.params.roomId) {
         const game = new Game(boardSize, "new", username, username);
         game.activePlayer = username;
@@ -108,7 +120,14 @@ class LiveGame extends Component {
     this.setState({
       game
     });
+
     if (this.props.username !== game.activePlayer) {
+      //not my turn
+      this.setState({
+        myCounter: false,
+        opponentCounter: true
+      });
+
       socket.emit("updateGame", {
         gameState: {
           ptn: game.ptn,
@@ -117,19 +136,14 @@ class LiveGame extends Component {
         activePlayer: game.activePlayer,
         roomId: match.params.roomId
       });
-    }
-
-    if (game.activePlayer === this.props.username) {
+    } else {
+      // my turn
       this.setState({
         myCounter: true,
         opponentCounter: false
       });
-    } else {
-      this.setState({
-        myCounter: false,
-        opponentCounter: true
-      });
     }
+
     if (game.winType && game.player1 !== game.player2) {
       socket.emit("closeGame", match.params.roomId);
       if (
@@ -289,14 +303,20 @@ class LiveGame extends Component {
 
     let PlayerPieces;
     let OpponentPieces;
+    let OpponentName;
+    let me;
     let topPlayerName, bottomPlayerName, topPlayerNo, bottomPlayerNo, color;
     if (username === game.player2) {
+      OpponentName = game.player1;
+      me = game.player2;
       topPlayerName = game.player1;
       bottomPlayerName = username;
       topPlayerNo = 1;
       bottomPlayerNo = 2;
       color = "btn-player2-piece";
     } else {
+      OpponentName = game.player2;
+      me = game.player1;
       topPlayerName = game.player2;
       bottomPlayerName = game.player1;
       topPlayerNo = 2;
@@ -349,6 +369,7 @@ class LiveGame extends Component {
         <div className="game-info">
           <div>
             <Clock
+              player={OpponentName}
               time={this.state.time}
               shouldCount={this.state.opponentCounter}
               timeOut={this.timeOut}
@@ -368,6 +389,7 @@ class LiveGame extends Component {
 
           <div>
             <Clock
+              player={me}
               time={this.state.time}
               shouldCount={this.state.myCounter}
               timeOut={this.timeOut}
