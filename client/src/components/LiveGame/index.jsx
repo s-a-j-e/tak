@@ -119,15 +119,15 @@ class LiveGame extends Component {
       });
     }
 
-    if (game.activePlayer !== this.props.username) {
-      this.setState({
-        myCounter: false,
-        opponentCounter: true
-      });
-    } else {
+    if (game.activePlayer === this.props.username) {
       this.setState({
         myCounter: true,
         opponentCounter: false
+      });
+    } else {
+      this.setState({
+        myCounter: false,
+        opponentCounter: true
       });
     }
     if (game.winType && game.player1 !== game.player2) {

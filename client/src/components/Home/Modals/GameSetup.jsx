@@ -75,7 +75,6 @@ class GameSetup extends Component {
       { key: "3", text: "3", value: "3" }
     ];
     const times = [
-      { key: "1", text: "no time control", value: "0" },
       { key: "2", text: "15", value: "15" },
       { key: "3", text: "10", value: "10" },
       { key: "4", text: "5", value: "5" },
@@ -138,7 +137,6 @@ class GameSetup extends Component {
                 roomName
               )
             }
-          />
           />
         </Modal.Actions>
       </Modal>
