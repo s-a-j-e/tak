@@ -21,7 +21,6 @@ class GameLink extends Component {
     };
   }
   render() {
-    console.log("!!!this.props.time", this.props.time);
     const { modalView, changeView, gameType, url, link } = this.props;
     let urlField;
     let header;

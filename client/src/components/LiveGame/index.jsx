@@ -34,70 +34,61 @@ class LiveGame extends Component {
       isOpen: true,
       user: props.currentUser,
       myCounter: false,
-      opponentCounter: false,
-      myFirstClock: false,
-      opponentFirstClock: false
+      opponentCounter: false
     };
     this.movePieces = this.movePieces.bind(this);
     this.handleSquareClick = this.handleSquareClick.bind(this);
     this.selectCapstone = this.selectCapstone.bind(this);
     this.timeOut = this.timeOut.bind(this);
 
-    this.myFirstMove = true;
-    this.opponentFirstMove = true;
-    this.useTimer = true;
-    // this.myFirstClockCounter = false;
-    // this.opponentFirstClockCounter = false;
-
-    const { socket, username, time } = props;
+    const { socket, username } = props;
     const { roomId } = props.match.params;
-    socket.emit("syncGame", {
+
+    socket.emit("fetchGame", {
       username,
       roomId
     });
-    socket.on("playerJoin", ({ boardSize, player1, player2, time }) => {
-      const game = new Game(boardSize);
-      game.player1 = player1;
-      game.player2 = player2;
-      game.activePlayer = player1;
-      game.time = time;
 
-      //time control logic
-      let shouldStartMyCounter = false;
-      let shouldStartOpponentCounter = false;
-      let shouldRemoveMyFirstClock = false;
-      let shouldRemoveOpponentFirstClock = false;
-
-      if (this.props.username === game.activePlayer) {
-        // player1 first move
-        shouldStartMyCounter = true;
-        shouldStartOpponentCounter = false;
-        // show myFirstClock
-        shouldRemoveMyFirstClock = false;
-        // not show myOpponentFristClock
-        shouldRemoveOpponentFirstClock = true;
-      } else {
-        // player2 first move
-        shouldStartMyCounter = false;
-        shouldStartOpponentCounter = true;
-        // not show myOpponentFristClock
-        shouldRemoveMyFirstClock = true;
-        // show myFirstClock
-        shouldRemoveOpponentFirstClock = false;
+    socket.on(
+      "syncGame",
+      ({
+        boardSize,
+        gameState,
+        player1,
+        player2,
+        roomId,
+        activePlayer,
+        time
+      }) => {
+        if (roomId === props.match.params.roomId) {
+          const game = new Game(boardSize, gameState, player1, player2);
+          game.activePlayer = activePlayer;
+          game.time = time;
+          this.setState({
+            game,
+            time: game.time,
+            myCounter: true,
+            opponentCounter: false
+          });
+        }
       }
+    );
 
-      this.setState({
-        time: game.time,
-        game,
-        myCounter: shouldStartMyCounter,
-        opponentCounter: shouldStartOpponentCounter,
-        myFirstClock: shouldRemoveMyFirstClock,
-        opponentFirstClock: shouldRemoveOpponentFirstClock
-      });
-    });
-    socket.on("opponentMove", ({ col, row, stone, roomId }) => {
+    socket.on("pendingGame", ({ boardSize, roomId }) => {
       if (roomId === props.match.params.roomId) {
-        this.movePieces(col, row, false, stone);
+        const game = new Game(boardSize, "new", username, username);
+        game.activePlayer = username;
+        this.setState({
+          game
+        });
+      }
+    });
+
+    socket.on("gameAccessDenied", roomId => {
+      if (roomId === props.match.params.roomId) {
+        this.setState({
+          accessDenied: true
+        });
       }
     });
 
@@ -105,10 +96,11 @@ class LiveGame extends Component {
     // this.sounds = { brick: sound_brick_drop };
   }
 
-  movePieces(col, row, isPlayerMove, stone = this.state.stone) {
-    const { game } = this.state;
+  movePieces(col, row) {
+    const { game, stone } = this.state;
+    const { socket, match } = this.props;
     game.selectStack(col, row, stone);
-    if (this.state.stone !== "") {
+    if (stone !== "") {
       this.setState({
         stone: ""
       });
@@ -116,61 +108,15 @@ class LiveGame extends Component {
     this.setState({
       game
     });
-    //I am the person made the move
-    if (isPlayerMove) {
-      this.props.socket.emit("updateGame", {
-        col,
-        row,
-        stone,
-        roomId: this.props.match.params.roomId
+    if (this.props.username !== game.activePlayer) {
+      socket.emit("updateGame", {
+        gameState: {
+          ptn: game.ptn,
+          tps: game.tps
+        },
+        activePlayer: game.activePlayer,
+        roomId: match.params.roomId
       });
-
-      if (this.myFirstMove) {
-        this.myFirstMove = false;
-
-        if (this.props.username === game.player1) {
-          // Player1 finished first move
-          //remove my firstClock
-          this.setState({
-            myFirstClock: true,
-            opponentFirstClock: false
-          });
-        } else {
-          // Player2 finished first move
-          // remove both sides' first clock
-          this.setState({
-            myFirstClock: true,
-            opponentFirstClock: true
-          });
-        }
-      }
-    } else {
-      //sync the game, I am replaying opponent's move
-      if (this.myFirstMove) {
-        // Player2 replayed Player1's first move
-        this.setState({
-          myFirstClock: false,
-          opponentFirstClock: true
-        });
-      } else if (this.opponentFirstMove) {
-        // Player1 replayed Player2's first move
-        this.setState({
-          myFirstClock: true,
-          opponentFirstClock: true
-        });
-      }
-
-      // whoever you are, your opponent finished the first move
-      this.opponentFirstMove = false;
-    }
-
-    // logic for the timers
-    if (game.winType) {
-      this.setState({
-        myCounter: false,
-        opponentCounter: false
-      });
-      return;
     }
 
     if (game.activePlayer !== this.props.username) {
@@ -184,11 +130,39 @@ class LiveGame extends Component {
         opponentCounter: false
       });
     }
+    if (game.winType && game.player1 !== game.player2) {
+      socket.emit("closeGame", match.params.roomId);
+      if (
+        game.victorUsername === this.props.username ||
+        game.victorUsername === null
+      ) {
+        const {
+          player1,
+          player2,
+          ptnString,
+          tps,
+          victorUsername,
+          size,
+          winType,
+          ranked
+        } = game;
+        axios.post("/record", {
+          player1,
+          player2,
+          size,
+          winType,
+          victor: victorUsername,
+          ptn: ptnString,
+          tps,
+          ranked
+        });
+      }
+    }
   }
 
   handleSquareClick(col, row) {
     if (this.props.username === this.state.game.activePlayer) {
-      this.movePieces(col, row, true);
+      this.movePieces(col, row);
       // this.play("brick");
     }
   }
@@ -213,7 +187,7 @@ class LiveGame extends Component {
     let winner = this.state.game.victorUsername;
     let loser = this.state.game.loserUsername;
     if (this.state.game.winType === "1/2") {
-      return <p>{`It's a Draw! ${winner} wins!`}</p>;
+      return <p>{`It's a Draw!`}</p>;
     } else if (
       this.state.game.winType === "1/2" &&
       this.state.game.isBoardFull
@@ -230,7 +204,7 @@ class LiveGame extends Component {
       return (
         <div>
           <p>
-            Road Complited <br />
+            Road Completed <br />
           </p>
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
@@ -270,19 +244,27 @@ class LiveGame extends Component {
   }
 
   opponentTurn() {
-    const { activePlayer } = this.state.game;
-    if (activePlayer !== this.props.username) {
+    const { activePlayer, player1, player2 } = this.state.game;
+    const { username } = this.props;
+    const isPlayer = username === player1 || username === player2;
+    if (activePlayer !== username && isPlayer) {
       return <div className="to-play">Waiting for Opponent...</div>;
+    } else if (isPlayer || activePlayer === player1) {
+      return <div className="to-play" />;
     }
-    return <div className="to-play" />;
+    return <div className="to-play">{player2}'s turn</div>;
   }
 
   userTurn() {
-    const { activePlayer } = this.state.game;
-    if (activePlayer === this.props.username) {
+    const { activePlayer, player1, player2 } = this.state.game;
+    const { username } = this.props;
+    const isPlayer = username === player1 || username === player2;
+    if (activePlayer === username) {
       return <div className="to-play">Your turn</div>;
+    } else if (isPlayer || activePlayer === player2) {
+      return <div className="to-play" />;
     }
-    return <div className="to-play" />;
+    return <div className="to-play">{player1}'s turn</div>;
   }
 
   //play sounds function
@@ -302,34 +284,38 @@ class LiveGame extends Component {
   }
 
   render() {
-    if (this.state.time === -1) {
-      this.useTimer = false;
-    }
-
     const { game, stone } = this.state;
-    const { username, socket, time } = this.props;
+    const { username, socket } = this.props;
 
     let PlayerPieces;
     let OpponentPieces;
-    let opponentName, opponentNo, playerNo, color;
-    if (username === game.player1) {
-      opponentName = game.player2;
-      opponentNo = 2;
-      playerNo = 1;
-      color = "btn-player1-piece";
-    } else {
-      opponentName = game.player1;
-      opponentNo = 1;
-      playerNo = 2;
+    let topPlayerName, bottomPlayerName, topPlayerNo, bottomPlayerNo, color;
+    if (username === game.player2) {
+      topPlayerName = game.player1;
+      bottomPlayerName = username;
+      topPlayerNo = 1;
+      bottomPlayerNo = 2;
       color = "btn-player2-piece";
+    } else {
+      topPlayerName = game.player2;
+      bottomPlayerName = game.player1;
+      topPlayerNo = 2;
+      bottomPlayerNo = 1;
+      color = "btn-player1-piece";
+    }
+
+    if (game.player1 === game.player2) {
+      topPlayerName = "Waiting for Match...";
     }
 
     PlayerPieces = (
       <div className="score">
         <table>
           <tr>
-            <td>{`${game.pieces[playerNo].F} / ${game.pieces[playerNo].C}`}</td>
-            <td>{game[`p${playerNo}FlatScore`]}</td>
+            <td>{`${game.pieces[bottomPlayerNo].F} / ${
+              game.pieces[bottomPlayerNo].C
+            }`}</td>
+            <td>{game[`p${bottomPlayerNo}FlatScore`]}</td>
           </tr>
           <tr style={{ "font-size": "10px" }}>
             <td>Stones</td>
@@ -346,10 +332,10 @@ class LiveGame extends Component {
             <td>Score</td>
           </tr>
           <tr>
-            <td>{`${game.pieces[opponentNo].F} / ${
-              game.pieces[opponentNo].C
+            <td>{`${game.pieces[topPlayerNo].F} / ${
+              game.pieces[topPlayerNo].C
             }`}</td>
-            <td>{game[`p${opponentNo}FlatScore`]}</td>
+            <td>{game[`p${topPlayerNo}FlatScore`]}</td>
           </tr>
         </table>
       </div>
@@ -362,72 +348,30 @@ class LiveGame extends Component {
       <div className="takless">
         <div className="game-info">
           <div>
-            {/*Opponent's clock*/}
-            {this.useTimer ? (
-              <Clock
-                time={this.state.time}
-                player={opponentName}
-                shouldCount={
-                  this.state.opponentCounter && !this.opponentFirstMove
-                }
-                timeOut={this.timeOut}
-              />
-            ) : (
-              ""
-            )}
+            <Clock
+              time={this.state.time}
+              shouldCount={this.state.opponentCounter}
+              timeOut={this.timeOut}
+            />
           </div>
-          <div>
-            {/*Opponent's first move clock */}
-            {/*count down when player joined, 
-              removed when placed the stone and it's opponent's turn
-            */}
-            {this.useTimer ? (
-              <Clock
-                time={20}
-                player={username}
-                shouldCount={this.state.opponentCounter}
-                timeOut={this.timeOut}
-                removed={this.state.opponentFirstClock}
-              />
-            ) : (
-              ""
-            )}
-          </div>
+
           <div>{this.winner()}</div>
           {this.opponentTurn()}
           <table>
             {OpponentPieces}
-            <tr>{opponentName}</tr>
-            <PTN ptn={this.state.game.ptn} />
-            <tr>{this.props.username}</tr>
+            <tr>{topPlayerName}</tr>
+            <PTN ptn={game.ptn} />
+            <tr>{bottomPlayerName}</tr>
             {PlayerPieces}
           </table>
           {this.userTurn()}
+
           <div>
-            {/* first move clock */}
-            {this.useTimer ? (
-              <Clock
-                time={20}
-                player={username}
-                shouldCount={this.state.myCounter}
-                timeOut={this.timeOut}
-                removed={this.state.myFirstClock}
-              />
-            ) : (
-              ""
-            )}
-          </div>
-          <div>
-            {this.useTimer ? (
-              <Clock
-                time={this.state.time}
-                player={username}
-                shouldCount={this.state.myCounter && !this.myFirstMove}
-                timeOut={this.timeOut}
-              />
-            ) : (
-              ""
-            )}
+            <Clock
+              time={this.state.time}
+              shouldCount={this.state.myCounter}
+              timeOut={this.timeOut}
+            />
           </div>
         </div>
         <div className="main">
@@ -443,7 +387,7 @@ class LiveGame extends Component {
                   this.toggleStanding();
                 }}
               >
-                {stone === "S" ? "F" : "S"}({game.pieces[playerNo].F})
+                {stone === "S" ? "F" : "S"}({game.pieces[bottomPlayerNo].F})
               </button>
               <button
                 className={color}
@@ -451,7 +395,7 @@ class LiveGame extends Component {
                   this.selectCapstone("C");
                 }}
               >
-                C ({game.pieces[playerNo].C})
+                C ({game.pieces[bottomPlayerNo].C})
               </button>
             </div>
           </div>

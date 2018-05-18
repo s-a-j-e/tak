@@ -5,22 +5,21 @@ import Stack from "./Stack";
 class Game {
   constructor(
     size,
-    time,
     gameState = "new",
-    ranked = false,
-    player1 = "p1",
-    player2 = "p2"
+    player1 = null,
+    player2 = null,
+    ranked = false
   ) {
     this.toPlay = 1;
     this.activePlayer = null;
-    this.player1 = null;
-    this.player2 = null;
+    this.player1 = player1;
+    this.player2 = player2;
     this.victor = 0; // 0, 1, or 2
-    this.winType = null; // null, R, F, T, 1 or 1/2
+    this.winType = null; // null, R, F, 1 or 1/2
     this.winString = "";
     this.ranked = ranked;
     this.size = size;
-    this.time = time;
+    this.time = "";
     this.board = [];
     this.squares = {};
     this.createBoard(size);
@@ -47,8 +46,8 @@ class Game {
     this.isBoardFull = false;
     this.p1FlatScore = 0;
     this.p2FlatScore = 0;
-    this.victorUsername = "Nobody"; // Wining Player Username or 'Nobody'
-    this.loserUsername = "Nobody"; // Loosing Player Username or 'Nobody'
+    this.victorUsername = null; // Wining Player Username or null
+    this.loserUsername = null; // Loosing Player Username or null
 
     if (gameState !== "new") {
       const { tps, ptn } = gameState;
@@ -56,8 +55,6 @@ class Game {
       this.tps = tps;
       this.ptn = ptn;
     }
-
-    this.timeOut = this.timeOut.bind(this);
   }
 
   createBoard(size) {
@@ -129,7 +126,7 @@ class Game {
         this.plyPtn = [];
       }
     }
-    if (this.victor !== 0) {
+    if (this.winType !== null) {
       this.ptn.push([this.winString]);
       this.handleWin();
     }
@@ -160,7 +157,7 @@ class Game {
       .slice(6, tps.length - 2)
       .join("")
       .split(" ");
-    this.turn = +parsedTPS.pop();
+    this.turn = +parsedTPS.pop() - 1;
     this.toPlay = +parsedTPS.pop();
     parsedTPS = parsedTPS.join("").split("/");
     parsedTPS.forEach((row, i) => {
@@ -186,6 +183,11 @@ class Game {
           stack.owner = s[0];
         }
       }
+    }
+    this.checkRoads();
+    this.checkFullBoardWins();
+    if (this.pieces[this.toPlay].total === 0) {
+      this.checkOutOfPiecesWins();
     }
   }
 
@@ -310,7 +312,11 @@ class Game {
         this.toMove.stone === "C" &&
         this.toMove.stack.length === 1
       ) {
+        this.setMoveDir(stack);
+        this.toMove.coord = coord;
+        this.step = stack.coord;
         stack.place(this.toMove.stack.pop(), "C");
+        this.parsePTN();
         this.toMove.coord = "";
         Object.keys(this.squares).forEach(c => {
           this.squares[c].validMove = false;
@@ -482,24 +488,6 @@ class Game {
   handleWin() {
     this.printPTN();
     this.parseTPS(this.board);
-    const {
-      player1,
-      player2,
-      ptnString,
-      victorUsername,
-      size,
-      winType,
-      ranked
-    } = this;
-    axios.post("/record", {
-      player1,
-      player2,
-      size,
-      winType,
-      victor: victorUsername,
-      ptn: ptnString,
-      ranked
-    });
   }
 
   // the player timeouts, he loses

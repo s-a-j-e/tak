@@ -5,33 +5,21 @@ class Clock extends Component {
     super(props);
     this.owner = props.player;
 
-    if (props.time) {
-      this.state = { seconds: props.time, removed: false };
-    } else {
-      this.state = { seconds: 0, removed: false };
-    }
+    this.state = { seconds: 0 };
+
     this.timer = 0;
     this.start = this.start.bind(this);
     this.countDown = this.countDown.bind(this);
   }
   // called when one of the props changed and call the render function
   static getDerivedStateFromProps(nextProps, prevState) {
-    let currentState = {};
-
     // set the new value for the timer to the current state
     if (prevState.seconds === 0 && nextProps.time) {
-      currentState.seconds = nextProps.time;
+      return {
+        seconds: nextProps.time
+      };
     }
 
-    // update the remove flag to the current state
-    if (prevState.removed !== nextProps.removed) {
-      currentState.removed = nextProps.removed;
-    }
-
-    if (currentState) {
-      console.log("Current state", currentState);
-      return currentState;
-    }
     return null;
   }
 
@@ -75,11 +63,6 @@ class Clock extends Component {
   }
 
   render() {
-    if (this.state.removed) {
-      this.pause();
-      return "";
-    }
-
     let format_time = this.formatSeconds(this.state.seconds);
     if (this.props.shouldCount) {
       this.start();
