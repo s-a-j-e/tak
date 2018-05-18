@@ -1,6 +1,6 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import { CopyToClipboard } from "react-copy-to-clipboard";
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {
   Input,
   Button,
@@ -10,21 +10,21 @@ import {
   Form,
   Select,
   Transition
-} from "semantic-ui-react";
+} from 'semantic-ui-react';
 
 class GameLink extends Component {
   constructor(props) {
     super(props);
     this.state = {
       copied: false,
-      time: ""
+      time: ''
     };
   }
   render() {
     const { modalView, changeView, gameType, url, link } = this.props;
     let urlField;
     let header;
-    if (gameType === "friend") {
+    if (gameType === 'friend') {
       urlField = (
         <div>
           <div>
@@ -41,31 +41,31 @@ class GameLink extends Component {
             </Form.Field>
           </div>
           <div id="copied">
-            {this.state.copied ? "copied" : "Click to copy"}
+            {this.state.copied ? 'copied' : 'Click to copy'}
           </div>
         </div>
       );
-      header = "Click the Link Below";
+      header = 'Click the Link Below';
     } else {
       urlField = (
         <Form.Field>
           <label>Game is created!</label>
         </Form.Field>
       );
-      header = "New Game Created";
+      header = 'New Game Created';
     }
 
     return (
       <Modal
-        open={modalView === "GameLink"}
-        size={"tiny"}
+        open={modalView === 'GameLink'}
+        size={'tiny'}
         closeIcon
         dimmer={false}
-        onClose={() => changeView("")}
+        onClose={() => changeView('')}
       >
         <Modal.Header>{header}</Modal.Header>
         <Modal.Content>
-          <Form size={"tiny"} key={"small"} />
+          <Form size={'tiny'} key={'small'} />
           {urlField}
         </Modal.Content>
         <Modal.Actions>

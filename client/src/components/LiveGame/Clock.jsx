@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 class Clock extends Component {
   constructor(props) {
@@ -50,24 +50,24 @@ class Clock extends Component {
 
   formatSeconds(totalSeconds) {
     if (!totalSeconds) {
-      return { m: "00", s: "00" };
+      return { m: '00', s: '00' };
     }
     var seconds = totalSeconds % 60;
     var minutes = Math.floor(totalSeconds / 60);
 
     if (seconds < 10) {
-      seconds = "0" + seconds;
+      seconds = '0' + seconds;
     }
 
     if (minutes < 10) {
-      minutes = "0" + minutes;
+      minutes = '0' + minutes;
     }
 
     return { m: minutes, s: seconds };
   }
 
   render() {
-    console.log("this owner", this.state.owner);
+    console.log('this owner', this.state.owner);
     let format_time = this.formatSeconds(this.state.seconds);
     if (this.props.shouldCount) {
       this.start();

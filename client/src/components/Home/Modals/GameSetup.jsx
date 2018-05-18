@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 import {
   Input,
   Button,
@@ -9,11 +9,11 @@ import {
   Select,
   Transition,
   Checkbox
-} from "semantic-ui-react";
+} from 'semantic-ui-react';
 //connect to redux
-import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
-import { setTime } from "../../../actions/actions";
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { setTime } from '../../../actions/actions';
 
 class GameSetup extends Component {
   constructor(props) {
@@ -21,7 +21,7 @@ class GameSetup extends Component {
     this.state = {
       boardSize: 0,
       isPrivate: false,
-      roomName: "",
+      roomName: '',
       time: false
     };
 
@@ -41,7 +41,7 @@ class GameSetup extends Component {
     }
   }
   handleTimeChange(e, { value }) {
-    if (value === "0") {
+    if (value === '0') {
       this.setState({
         time: -1
       });
@@ -67,33 +67,33 @@ class GameSetup extends Component {
 
   render() {
     const options = [
-      { key: "8", text: "8", value: "8" },
-      { key: "7", text: "7", value: "7" },
-      { key: "6", text: "6", value: "6" },
-      { key: "5", text: "5", value: "5" },
-      { key: "4", text: "4", value: "4" },
-      { key: "3", text: "3", value: "3" }
+      { key: '8', text: '8', value: '8' },
+      { key: '7', text: '7', value: '7' },
+      { key: '6', text: '6', value: '6' },
+      { key: '5', text: '5', value: '5' },
+      { key: '4', text: '4', value: '4' },
+      { key: '3', text: '3', value: '3' }
     ];
     const times = [
-      { key: "2", text: "15", value: "15" },
-      { key: "3", text: "10", value: "10" },
-      { key: "4", text: "5", value: "5" },
-      { key: "5", text: "3", value: "3" },
-      { key: "6", text: "1", value: "0.1" }
+      { key: '2', text: '15', value: '15' },
+      { key: '3', text: '10', value: '10' },
+      { key: '4', text: '5', value: '5' },
+      { key: '5', text: '3', value: '3' },
+      { key: '6', text: '1', value: '0.1' }
     ];
-    const isFriendly = this.props.gameType === "friend";
+    const isFriendly = this.props.gameType === 'friend';
     const { boardSize, isPrivate, roomName, time } = this.state;
     return (
       <Modal
-        open={this.props.modalView === "GameSetup"}
-        size={"tiny"}
-        onClose={() => this.props.changeView("")}
+        open={this.props.modalView === 'GameSetup'}
+        size={'tiny'}
+        onClose={() => this.props.changeView('')}
         dimmer={false}
         closeIcon
       >
         <Modal.Header>GameSetup</Modal.Header>
         <Modal.Content>
-          <Form size={"tiny"} key={"small"}>
+          <Form size={'tiny'} key={'small'}>
             <Form.Field
               control={Select}
               label="Board Size"

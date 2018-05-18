@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
-import Lobby from "./lobby";
-import LeaderboardTable from "../../containers/Home/leaderboard_table";
-import LobbyTable from "../../containers/Home/lobby_table";
-import { connect } from "react-redux";
-import axios from "axios";
-import Leaderboard from "./Leaderboard";
+import React, { Component } from 'react';
+import { Link, withRouter } from 'react-router-dom';
+import Lobby from './lobby';
+import LeaderboardTable from '../../containers/Home/leaderboard_table';
+import LobbyTable from '../../containers/Home/lobby_table';
+import { connect } from 'react-redux';
+import axios from 'axios';
+import Leaderboard from './Leaderboard';
 
 import {
   Input,
@@ -16,19 +16,19 @@ import {
   Form,
   Select,
   Transition
-} from "semantic-ui-react";
-import GameSetup from "./Modals/GameSetup";
-import GameLink from "./Modals/GameLink";
-import generateRoomName from "./roomNames";
+} from 'semantic-ui-react';
+import GameSetup from './Modals/GameSetup';
+import GameLink from './Modals/GameLink';
+import generateRoomName from './roomNames';
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      modalView: "",
-      gameType: "",
-      url: "",
-      link: "",
+      modalView: '',
+      gameType: '',
+      url: '',
+      link: '',
       leaderboard: []
     };
     this.handleCreateGame = this.handleCreateGame.bind(this);
@@ -47,7 +47,7 @@ class Home extends Component {
       roomName = generateRoomName();
     }
     const { socket, username } = this.props;
-    socket.emit("createGame", {
+    socket.emit('createGame', {
       time,
       username,
       boardSize,
@@ -56,19 +56,19 @@ class Home extends Component {
       roomName
     });
 
-    socket.on("gameInitiated", ({ roomId }) => {
+    socket.on('gameInitiated', ({ roomId }) => {
       let url = `http://localhost:3000/game/${roomId}`;
       let link = `game/${roomId}`;
       this.setState({
         url,
         link,
-        modalView: "GameLink"
+        modalView: 'GameLink'
       });
     });
   }
 
   getLeaderboard() {
-    axios.get("/leaderboard").then(board => {
+    axios.get('/leaderboard').then(board => {
       this.setState({ leaderboard: board.data });
     });
   }
@@ -85,8 +85,8 @@ class Home extends Component {
             className="createGame"
             onClick={() =>
               this.setState({
-                modalView: "GameSetup",
-                gameType: "general"
+                modalView: 'GameSetup',
+                gameType: 'general'
               })
             }
           >
@@ -96,8 +96,8 @@ class Home extends Component {
             className="createGame"
             onClick={() => {
               this.setState({
-                modalView: "GameSetup",
-                gameType: "friend"
+                modalView: 'GameSetup',
+                gameType: 'friend'
               });
             }}
           >

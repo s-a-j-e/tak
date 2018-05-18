@@ -1,11 +1,11 @@
-import { combineReducers } from "redux";
-import initialState from "../initialState";
-import action from "../actions/actions";
+import { combineReducers } from 'redux';
+import initialState from '../initialState';
+import action from '../actions/actions';
 import {
   LOGGEDIN,
   TOGGLE_LOGIN_LOGOUT,
   SET_ANON_USERNAME
-} from "../actions/types";
+} from '../actions/types';
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
@@ -20,7 +20,7 @@ const rootReducer = (state = initialState, action) => {
         ...state,
         isLoggedIn: action.payload
       };
-    case "SET_TIME":
+    case 'SET_TIME':
       return { ...state, time: action.payload };
     case SET_ANON_USERNAME:
       let username = action.payload;

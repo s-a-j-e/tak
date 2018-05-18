@@ -3,7 +3,7 @@ import types, {
   LOGGEDIN,
   TOGGLE_LOGIN_LOGOUT,
   SET_LOGGEDIN_PLAYERS
-} from "./types";
+} from './types';
 
 export const setAnonUsername = username => ({
   type: SET_ANON_USERNAME,
@@ -29,6 +29,6 @@ export const setLoggedInPlayers = (player1, player2) => ({
 });
 
 export const setTime = time => ({
-  type: "SET_TIME",
+  type: 'SET_TIME',
   payload: time
 });

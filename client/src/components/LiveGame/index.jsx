@@ -1,17 +1,17 @@
 /* eslint-disable */
-import React, { Component } from "react";
-import axios from "axios";
-import { connect } from "react-redux";
-import { Link, withRouter } from "react-router-dom";
-import sound_brick_drop from "./Sounds/brick_drop_concrete.wav";
-import Game from "./Game";
-import Board from "./Board";
-import Stack from "./Stack";
-import Chat from "./chat"; // not in use currently
-import PTN from "./PTN";
-import Clock from "./Clock";
-import "../../styles/livegame.css";
-import { convertCoord } from "./gameUtil";
+import React, { Component } from 'react';
+import axios from 'axios';
+import { connect } from 'react-redux';
+import { Link, withRouter } from 'react-router-dom';
+import sound_brick_drop from './Sounds/brick_drop_concrete.wav';
+import Game from './Game';
+import Board from './Board';
+import Stack from './Stack';
+import Chat from './chat'; // not in use currently
+import PTN from './PTN';
+import Clock from './Clock';
+import '../../styles/livegame.css';
+import { convertCoord } from './gameUtil';
 import {
   Input,
   Button,
@@ -21,7 +21,7 @@ import {
   Form,
   Select,
   Transition
-} from "semantic-ui-react";
+} from 'semantic-ui-react';
 
 class LiveGame extends Component {
   constructor(props) {
@@ -30,10 +30,10 @@ class LiveGame extends Component {
     this.state = {
       game: newGame,
       time: false,
-      stone: "",
+      stone: '',
       isOpen: true,
       user: props.currentUser,
-      OpponentName: "",
+      OpponentName: '',
       myCounter: false,
       opponentCounter: false
     };
@@ -45,13 +45,13 @@ class LiveGame extends Component {
     const { socket, username } = props;
     const { roomId } = props.match.params;
 
-    socket.emit("fetchGame", {
+    socket.emit('fetchGame', {
       username,
       roomId
     });
 
     socket.on(
-      "syncGame",
+      'syncGame',
       ({
         boardSize,
         gameState,
@@ -65,7 +65,7 @@ class LiveGame extends Component {
           const game = new Game(boardSize, gameState, player1, player2);
           game.activePlayer = activePlayer;
           game.time = time;
-          
+
           let opponent;
           if (this.props.username === player1) {
             opponent = player2;
@@ -94,9 +94,9 @@ class LiveGame extends Component {
       }
     );
 
-    socket.on("pendingGame", ({ time, boardSize, roomId }) => {
+    socket.on('pendingGame', ({ time, boardSize, roomId }) => {
       if (roomId === props.match.params.roomId) {
-        const game = new Game(boardSize, "new", username, username);
+        const game = new Game(boardSize, 'new', username, username);
         game.activePlayer = username;
         this.setState({
           game
@@ -104,7 +104,7 @@ class LiveGame extends Component {
       }
     });
 
-    socket.on("gameAccessDenied", roomId => {
+    socket.on('gameAccessDenied', roomId => {
       if (roomId === props.match.params.roomId) {
         this.setState({
           accessDenied: true
@@ -120,9 +120,9 @@ class LiveGame extends Component {
     const { game, stone } = this.state;
     const { socket, match } = this.props;
     game.selectStack(col, row, stone);
-    if (stone !== "") {
+    if (stone !== '') {
       this.setState({
-        stone: ""
+        stone: ''
       });
     }
     this.setState({
@@ -136,7 +136,7 @@ class LiveGame extends Component {
         opponentCounter: true
       });
 
-      socket.emit("updateGame", {
+      socket.emit('updateGame', {
         gameState: {
           ptn: game.ptn,
           tps: game.tps
@@ -153,7 +153,7 @@ class LiveGame extends Component {
     }
 
     if (game.winType && game.player1 !== game.player2) {
-      socket.emit("closeGame", match.params.roomId);
+      socket.emit('closeGame', match.params.roomId);
       if (
         game.victorUsername === this.props.username ||
         game.victorUsername === null
@@ -168,7 +168,7 @@ class LiveGame extends Component {
           winType,
           ranked
         } = game;
-        axios.post("/record", {
+        axios.post('/record', {
           player1,
           player2,
           size,
@@ -198,20 +198,20 @@ class LiveGame extends Component {
   }
 
   toggleStanding() {
-    if (this.state.stone === "") {
-      this.setState({ stone: "S" });
+    if (this.state.stone === '') {
+      this.setState({ stone: 'S' });
     } else {
-      this.setState({ stone: "" });
+      this.setState({ stone: '' });
     }
   }
 
   winner() {
     let winner = this.state.game.victorUsername;
     let loser = this.state.game.loserUsername;
-    if (this.state.game.winType === "1/2") {
+    if (this.state.game.winType === '1/2') {
       return <p>{`It's a Draw!`}</p>;
     } else if (
-      this.state.game.winType === "1/2" &&
+      this.state.game.winType === '1/2' &&
       this.state.game.isBoardFull
     ) {
       return (
@@ -222,7 +222,7 @@ class LiveGame extends Component {
           <p>{`It's a Draw! ${winner} wins!`}</p>
         </div>
       );
-    } else if (this.state.game.winType === "R") {
+    } else if (this.state.game.winType === 'R') {
       return (
         <div>
           <p>
@@ -231,7 +231,7 @@ class LiveGame extends Component {
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
       );
-    } else if (this.state.game.winType === "F" && this.state.game.isBoardFull) {
+    } else if (this.state.game.winType === 'F' && this.state.game.isBoardFull) {
       return (
         <div>
           <p>
@@ -240,7 +240,7 @@ class LiveGame extends Component {
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
       );
-    } else if (this.state.game.winType === "F") {
+    } else if (this.state.game.winType === 'F') {
       return (
         <div>
           <p>
@@ -249,7 +249,7 @@ class LiveGame extends Component {
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
       );
-    } else if (this.state.game.winType === "T") {
+    } else if (this.state.game.winType === 'T') {
       // timeout situation
       return (
         <div>
@@ -318,17 +318,17 @@ class LiveGame extends Component {
       bottomPlayerName = username;
       topPlayerNo = 1;
       bottomPlayerNo = 2;
-      color = "btn-player2-piece";
+      color = 'btn-player2-piece';
     } else {
       topPlayerName = game.player2;
       bottomPlayerName = game.player1;
       topPlayerNo = 2;
       bottomPlayerNo = 1;
-      color = "btn-player1-piece";
+      color = 'btn-player1-piece';
     }
 
     if (game.player1 === game.player2) {
-      topPlayerName = "Waiting for Match...";
+      topPlayerName = 'Waiting for Match...';
     }
 
     PlayerPieces = (
@@ -340,7 +340,7 @@ class LiveGame extends Component {
             }`}</td>
             <td>{game[`p${bottomPlayerNo}FlatScore`]}</td>
           </tr>
-          <tr style={{ "font-size": "10px" }}>
+          <tr style={{ 'font-size': '10px' }}>
             <td>Stones</td>
             <td>Score</td>
           </tr>
@@ -350,7 +350,7 @@ class LiveGame extends Component {
     OpponentPieces = (
       <div className="score">
         <table>
-          <tr style={{ "font-size": "10px" }}>
+          <tr style={{ 'font-size': '10px' }}>
             <td>Stones</td>
             <td>Score</td>
           </tr>
@@ -412,12 +412,12 @@ class LiveGame extends Component {
                   this.toggleStanding();
                 }}
               >
-                {stone === "S" ? "F" : "S"}({game.pieces[bottomPlayerNo].F})
+                {stone === 'S' ? 'F' : 'S'}({game.pieces[bottomPlayerNo].F})
               </button>
               <button
                 className={color}
                 onClick={() => {
-                  this.selectCapstone("C");
+                  this.selectCapstone('C');
                 }}
               >
                 C ({game.pieces[bottomPlayerNo].C})

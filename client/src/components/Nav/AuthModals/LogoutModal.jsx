@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import { Modal } from "reactstrap";
-import axios from "axios";
-import { Button, Icon, Input, Header } from "semantic-ui-react";
-import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
-import { toggleLoginLogout, login } from "../../../actions/actions";
+import React, { Component } from 'react';
+import { Modal } from 'reactstrap';
+import axios from 'axios';
+import { Button, Icon, Input, Header } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { toggleLoginLogout, login } from '../../../actions/actions';
 
 class LogoutModal extends Component {
   constructor(props) {
@@ -15,11 +15,11 @@ class LogoutModal extends Component {
 
   handleLogout() {
     axios
-      .post("/auth/logout")
+      .post('/auth/logout')
       .then(() => {
-        this.props.toggleView("off");
+        this.props.toggleView('off');
         this.props.toggleLoginLogout(false);
-        this.props.login("guest");
+        this.props.login('guest');
       })
       .catch(err => {
         console.error(err);
@@ -28,21 +28,21 @@ class LogoutModal extends Component {
 
   render() {
     return (
-      <Modal isOpen={this.props.modalView === "logout"}>
+      <Modal isOpen={this.props.modalView === 'logout'}>
         <div className="logout">
-        <Header icon='LogOut' content='Log-Out to Your Account' />
+          <Header icon="LogOut" content="Log-Out to Your Account" />
           <p className="question">Are you sure you want to Logout?</p>
           <Button color="blue" onClick={this.handleLogout}>
-            <Icon size="large" name="sign out" corner="true"/>
+            <Icon size="large" name="sign out" corner="true" />
             Logout
           </Button>
           <Button
             color="red"
             onClick={() => {
-              this.props.toggleView("off");
+              this.props.toggleView('off');
             }}
           >
-            <Icon size="large" name="ban" corner="true"/>
+            <Icon size="large" name="ban" corner="true" />
             Cancel
           </Button>
         </div>

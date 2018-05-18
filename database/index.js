@@ -5,78 +5,79 @@ const options = {
   dialect: 'postgres',
   dialectOptions: {
     dialectModulePath: 'pg',
-    trustedConnection: true,
+    trustedConnection: true
   },
   host: 'localhost',
-  database: 'test',
+  database: 'test'
 };
 
 const dbPath = process.env.DATABASEURL || options;
 const sequelize = new Sequelize(dbPath);
 
-sequelize.authenticate()
+sequelize
+  .authenticate()
   .then(() => {
     console.log('successfully connected to db');
   })
-  .catch((err) => {
+  .catch(err => {
     console.error(err);
   });
 
 const User = sequelize.define('user', {
   username: {
     type: Sequelize.STRING,
-    unique: true,
+    unique: true
   },
   password: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   email: {
     type: Sequelize.STRING,
-    unique: true,
+    unique: true
   },
   googleID: {
     type: Sequelize.STRING,
-    unique: true,
+    unique: true
   },
   total_games: {
     type: Sequelize.INTEGER,
-    defaultValue: 0,
+    defaultValue: 0
   },
   ranked_games: {
     type: Sequelize.INTEGER,
-    defaultValue: 0,
+    defaultValue: 0
   },
   ranked_wins: {
     type: Sequelize.INTEGER,
-    defaultValue: 0,
-  },
+    defaultValue: 0
+  }
 });
 
 const Game = sequelize.define('game', {
   player1: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   player2: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   board_state: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   ptn: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   victor: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   win_type: {
-    type: Sequelize.STRING,
+    type: Sequelize.STRING
   },
   board_size: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.INTEGER
   },
   ranked: {
-    type: Sequelize.BOOLEAN,
-  },
+    type: Sequelize.BOOLEAN
+  }
 });
 
 User.hasMany(Game, { foreignKey: 'player1_id' });
@@ -94,14 +95,13 @@ User.hasMany(Game, { foreignKey: 'player2_id' });
 //   });
 
 // syncs all tables, drop and rebuild all tables with { force: true }
-sequelize.sync()
-  .then(() => {
-    console.log('tables synced');
-  });
+sequelize.sync().then(() => {
+  console.log('tables synced');
+});
 
 module.exports = {
   Sequelize,
   sequelize,
   User,
-  Game,
+  Game
 };
