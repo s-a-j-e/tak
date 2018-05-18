@@ -14,7 +14,9 @@ const Leaderboard = ({ leaderboard }) => {
             <th>Rank</th>
             <th>Username</th>
             <th>Total Games</th>
-            <th>Win/Loss <span style={{ 'font-size':'10px' }}>(Ranked)</span></th>
+            <th>
+              Win/Loss <span style={{ 'font-size': '10px' }}>(Ranked)</span>
+            </th>
           </tr>
         </thead>
         {leaderboard
@@ -24,16 +26,16 @@ const Leaderboard = ({ leaderboard }) => {
             return bWR - aWR;
           }) */
           .map((user, no) => {
-          const losses = user.ranked_games - user.ranked_wins;
-          return (
-            <tr>
-              <td>{no + 1}</td>
-              <td>{user.username}</td>
-              <td>{user.total_games}</td>
-              <td>{`${user.ranked_wins}W—${losses}L`}</td>
-            </tr>
-          );
-        })}
+            const losses = user.ranked_games - user.ranked_wins;
+            return (
+              <tr>
+                <td>{no + 1}</td>
+                <td>{user.username}</td>
+                <td>{user.total_games}</td>
+                <td>{`${user.ranked_wins}W—${losses}L`}</td>
+              </tr>
+            );
+          })}
       </table>
     </div>
   );

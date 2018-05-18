@@ -35,13 +35,13 @@ class App extends Component {
           props.toggleLoginLogout(true);
           props.login(currentUser);
         } else {
-          socket.emit('anonLogin', props.username,);
+          socket.emit('anonLogin', props.username);
         }
       })
       .catch(err => {
         console.error(err);
       });
-    socket.on('setAnonUsername', (username) => {
+    socket.on('setAnonUsername', username => {
       props.setAnonUsername(username);
     });
   }
@@ -63,17 +63,20 @@ class App extends Component {
       </div>
     );
   }
-};
+}
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
   return {
     username: state.currentUser,
     isLoggedIn: state.isLoggedIn
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ setAnonUsername, toggleLoginLogout, login }, dispatch);
+const mapDispatchToProps = dispatch => {
+  return bindActionCreators(
+    { setAnonUsername, toggleLoginLogout, login },
+    dispatch
+  );
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));

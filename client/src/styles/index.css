@@ -35,7 +35,8 @@ button:hover {
   color: rgb(255, 255, 255);
 }
 
-.ui.red.button:hover, .ui.red.buttons .button:hover {
+.ui.red.button:hover,
+.ui.red.buttons .button:hover {
   background-color: #d01919cf;
   color: #fff;
   text-shadow: none;
@@ -184,6 +185,20 @@ nav:hover {
   background-color: rgba(0, 0, 155, 0.2);
 }
 
+i.icon.paste {
+  float: right;
+}
+i.icon.paste:hover {
+  transform: scale(1.3);
+}
+
+#copied {
+  float: right;
+}
+
+#activeColor {
+  background: #ccc;
+}
 /* Chat */
 #tak {
   width: 100%;
@@ -225,7 +240,7 @@ nav:hover {
 #chat-window {
   height: 285px;
   overflow: auto;
-  border: 1px solid #D2D2D2;
+  border: 1px solid #d2d2d2;
   background-color: #f4f4f4;
 }
 

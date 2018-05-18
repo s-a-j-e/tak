@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-
 class Lobby extends Component {
   constructor(props) {
     super(props);
@@ -12,9 +11,9 @@ class Lobby extends Component {
 
     const { socket } = props;
     socket.emit('fetchLobby');
-    socket.on('updateLobby', (data) => {
+    socket.on('updateLobby', data => {
       this.setState({
-        games: data,
+        games: data
       });
     });
   }
@@ -30,7 +29,9 @@ class Lobby extends Component {
         </tr>
         {this.state.games.map(game => (
           <tr className="room">
-            <td><Link to={`/game/${game.name}`}>{game.name}</Link></td>
+            <td>
+              <Link to={`/game/${game.name}`}>{game.name}</Link>
+            </td>
             <td>FILL ME IN</td>
             <td>{game.boardSize}</td>
             <td>{game.isPending ? 'pending...' : 'active'}</td>
