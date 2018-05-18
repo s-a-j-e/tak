@@ -33,7 +33,7 @@ class LiveGame extends Component {
       stone: "",
       isOpen: true,
       user: props.currentUser,
-
+      OpponentName: "",
       myCounter: false,
       opponentCounter: false
     };
@@ -65,10 +65,18 @@ class LiveGame extends Component {
           const game = new Game(boardSize, gameState, player1, player2);
           game.activePlayer = activePlayer;
           game.time = time;
+          
+          let opponent;
+          if (this.props.username === player1) {
+            opponent = player2;
+          } else {
+            opponent = player1;
+          }
 
           this.setState({
             game,
-            time: game.time
+            time: game.time,
+            OpponentName: opponent
           });
 
           if (this.props.username === game.activePlayer) {
@@ -303,20 +311,15 @@ class LiveGame extends Component {
 
     let PlayerPieces;
     let OpponentPieces;
-    let OpponentName;
-    let me;
+
     let topPlayerName, bottomPlayerName, topPlayerNo, bottomPlayerNo, color;
     if (username === game.player2) {
-      OpponentName = game.player1;
-      me = game.player2;
       topPlayerName = game.player1;
       bottomPlayerName = username;
       topPlayerNo = 1;
       bottomPlayerNo = 2;
       color = "btn-player2-piece";
     } else {
-      OpponentName = game.player2;
-      me = game.player1;
       topPlayerName = game.player2;
       bottomPlayerName = game.player1;
       topPlayerNo = 2;
@@ -369,7 +372,7 @@ class LiveGame extends Component {
         <div className="game-info">
           <div>
             <Clock
-              player={OpponentName}
+              player={this.state.OpponentName}
               time={this.state.time}
               shouldCount={this.state.opponentCounter}
               timeOut={this.timeOut}
@@ -389,7 +392,7 @@ class LiveGame extends Component {
 
           <div>
             <Clock
-              player={me}
+              player={username}
               time={this.state.time}
               shouldCount={this.state.myCounter}
               timeOut={this.timeOut}

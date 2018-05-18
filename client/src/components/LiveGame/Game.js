@@ -497,7 +497,7 @@ class Game {
     this.loserUsername = this.victor === 1 ? this.player2 : this.player1;
     this.winType = "T";
     this.setWinString();
-    console.log("player", player, 'player1',this.player2, 'player2',this.player1 ,'loser', this.loserUsername,'victor',this.victorUsername);
+    console.log("player", player, 'player1',this.player1, 'player2',this.player2 ,'loser', this.loserUsername,'victor',this.victorUsername);
   }
 }
 

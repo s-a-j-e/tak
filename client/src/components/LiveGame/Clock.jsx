@@ -3,8 +3,8 @@ import React, { Component } from "react";
 class Clock extends Component {
   constructor(props) {
     super(props);
-    this.owner = props.player;
-    this.state = { seconds: undefined };
+
+    this.state = { seconds: undefined, owner: props.player };
     this.timer = 0;
     this.start = this.start.bind(this);
     this.countDown = this.countDown.bind(this);
@@ -12,13 +12,15 @@ class Clock extends Component {
   // called when one of the props changed and call the render function
   static getDerivedStateFromProps(nextProps, prevState) {
     // set the new value for the timer to the current state
+    let current = {};
     if (prevState.seconds === undefined && nextProps.time) {
-      return {
-        seconds: nextProps.time
-      };
+      current.seconds = nextProps.time;
+    }
+    if (prevState.owner !== nextProps.player) {
+      current.owner = nextProps.player;
     }
 
-    return null;
+    return current;
   }
 
   start() {
@@ -37,7 +39,7 @@ class Clock extends Component {
     // Check if we're at zero.
     if (this.state.seconds === 0) {
       clearInterval(this.timer);
-      this.props.timeOut(this.owner);
+      this.props.timeOut(this.state.owner);
       return;
     }
 
@@ -65,6 +67,7 @@ class Clock extends Component {
   }
 
   render() {
+    console.log("this owner", this.state.owner);
     let format_time = this.formatSeconds(this.state.seconds);
     if (this.props.shouldCount) {
       this.start();
