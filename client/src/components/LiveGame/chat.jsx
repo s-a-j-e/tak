@@ -88,7 +88,7 @@ class Chat extends Component {
       <div id="chat">
         <button onClick={this.handleTak} id="tak">
           Tak
-          <Icon size="large" name="road" corner="true"/>
+          <Icon size="large" name="road" corner="true" />
         </button>
         <div id="chat-window">
           <div id="output">
@@ -117,7 +117,9 @@ class Chat extends Component {
             onChange={ev => this.setState({ message: ev.target.value })}
           />
 
-          <button id="send" >Send <Icon size="large" name="talk" corner="true"/></button>
+          <button id="send">
+            Send <Icon size="large" name="talk" corner="true" />
+          </button>
         </form>
       </div>
     );

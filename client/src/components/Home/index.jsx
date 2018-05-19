@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import axios from 'axios';
-import Lobby from './lobby';
-import Leaderboard from './Leaderboard';
-import LobbyTable from '../../containers/Home/lobby_table';
-import { connect } from 'react-redux';
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import Lobby from "./lobby";
+import LeaderboardTable from "../../containers/Home/leaderboard_table";
+import LobbyTable from "../../containers/Home/lobby_table";
+import { connect } from "react-redux";
+import axios from "axios";
+import Leaderboard from "./Leaderboard";
+
 import {
   Input,
   Button,
@@ -14,20 +16,20 @@ import {
   Form,
   Select,
   Transition
-} from 'semantic-ui-react';
-import GameSetup from './Modals/GameSetup';
-import GameLink from './Modals/GameLink';
-import generateRoomName from './roomNames';
+} from "semantic-ui-react";
+import GameSetup from "./Modals/GameSetup";
+import GameLink from "./Modals/GameLink";
+import generateRoomName from "./roomNames";
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      modalView: '',
-      gameType: '',
-      url: '',
-      link: '',
-      leaderboard: [],
+      modalView: "",
+      gameType: "",
+      url: "",
+      link: "",
+      leaderboard: []
     };
     this.handleCreateGame = this.handleCreateGame.bind(this);
     this.changeView = this.changeView.bind(this);
@@ -40,12 +42,13 @@ class Home extends Component {
     });
   }
 
-  handleCreateGame(boardSize, isFriendly, isPrivate, roomName) {
+  handleCreateGame(time, boardSize, isFriendly, isPrivate, roomName) {
     if (!roomName) {
       roomName = generateRoomName();
     }
     const { socket, username } = this.props;
-    socket.emit('createGame', {
+    socket.emit("createGame", {
+      time,
       username,
       boardSize,
       isFriendly,
@@ -59,7 +62,7 @@ class Home extends Component {
       this.setState({
         url,
         link,
-        modalView: 'GameLink'
+        modalView: "GameLink"
       });
     });
   }
@@ -75,14 +78,6 @@ class Home extends Component {
   }
 
   render() {
-    const options = [
-      { key: '8', text: '8', value: '8' },
-      { key: '7', text: '7', value: '7' },
-      { key: '6', text: '6', value: '6' },
-      { key: '5', text: '5', value: '5' },
-      { key: '4', text: '4', value: '4' },
-      { key: '3', text: '3', value: '3' }
-    ];    
     return (
       <div className="takless">
         <div className="main">
@@ -91,11 +86,11 @@ class Home extends Component {
           </div>
           <button className="createGame">Play with Bot</button>
           <button
-            className="createGame" 
+            className="createGame"
             onClick={() =>
               this.setState({
-                modalView: 'GameSetup',
-                gameType: 'general'
+                modalView: "GameSetup",
+                gameType: "general"
               })
             }
           >
@@ -105,8 +100,8 @@ class Home extends Component {
             className="createGame"
             onClick={() => {
               this.setState({
-                modalView: 'GameSetup',
-                gameType: 'friend'
+                modalView: "GameSetup",
+                gameType: "friend"
               });
             }}
           >
@@ -114,16 +109,19 @@ class Home extends Component {
           </button>
 
           <GameSetup
-              modalView={this.state.modalView}
-              gameType={this.state.gameType}
-              changeView={this.changeView}
-              handleCreateGame={this.handleCreateGame} />
-          <GameLink
             modalView={this.state.modalView}
-            gameType={this.state.gameType}            
+            gameType={this.state.gameType}
+            changeView={this.changeView}
+            handleCreateGame={this.handleCreateGame}
+          />
+          <GameLink
+            time={this.state.time}
+            modalView={this.state.modalView}
+            gameType={this.state.gameType}
             changeView={this.changeView}
             url={this.state.url}
-            link={this.state.link} />      
+            link={this.state.link}
+          />
 
           <Leaderboard leaderboard={this.state.leaderboard} />
         </div>
@@ -132,8 +130,7 @@ class Home extends Component {
   }
 }
 
-
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
   return {
     username: state.currentUser
   };

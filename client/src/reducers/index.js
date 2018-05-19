@@ -4,7 +4,7 @@ import action from '../actions/actions';
 import { LOGGEDIN, TOGGLE_LOGIN_LOGOUT, SET_ANON_USERNAME, UPDATE_USER_PROFILE } from '../actions/types';
 
 const rootReducer = (state = initialState, action) => {
-   switch (action.type) {
+  switch (action.type) {
     case LOGGEDIN:
       let currentUserInfo = action.payload;
       return {
@@ -17,10 +17,12 @@ const rootReducer = (state = initialState, action) => {
         totalGames: currentUserInfo.totalGames
       };
     case TOGGLE_LOGIN_LOGOUT:
-      return { 
-        ...state, 
+      return {
+        ...state,
         isLoggedIn: action.payload
       };
+    case "SET_TIME":
+      return { ...state, time: action.payload };
     case SET_ANON_USERNAME:
       let username = action.payload;
       return {
@@ -35,7 +37,7 @@ const rootReducer = (state = initialState, action) => {
       };
     default:
       return state;
-   }
+  }
 };
 
 export default rootReducer;
