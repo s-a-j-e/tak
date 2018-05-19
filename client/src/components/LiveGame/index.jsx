@@ -176,7 +176,10 @@ class LiveGame extends Component {
           victor: victorUsername,
           ptn: ptnString,
           tps,
-          ranked
+          ranked,
+        }) 
+        .catch(err => {
+          console.error(err);
         });
       }
     }

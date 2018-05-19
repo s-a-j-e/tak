@@ -1,12 +1,12 @@
 const initialState = {
-  users: {},
-  currentUser:
-    "Tak-guest-" +
-    Math.random()
-      .toString(36)
-      .slice(2, 9),
   isLoggedIn: false,
-  time: 0
+  userID: null,
+  currentUser: 'Tak-guest-' + Math.random().toString(36).slice(2,9),
+  userEmail: null,
+  rankedGames: null,
+  rankedWins: null,
+  totalGames: null,
+  avatar: null
 };
 
 export default initialState;
