@@ -61,7 +61,8 @@ class GameLink extends Component {
         size={"tiny"}
         closeIcon
         dimmer={false}
-        onClose={() => changeView("")}
+        onClose={() => changeView('')}
+        closeIcon
       >
         <Modal.Header>{header}</Modal.Header>
         <Modal.Content>

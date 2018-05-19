@@ -55,8 +55,8 @@ class Home extends Component {
       isPrivate,
       roomName
     });
-
-    socket.on("gameInitiated", ({ roomId }) => {
+    socket.on('gameInitiated', ({ roomId }) => {
+      // TODO: Change URL from localhost to takless for deployment
       let url = `http://localhost:3000/game/${roomId}`;
       let link = `game/${roomId}`;
       this.setState({
@@ -68,9 +68,13 @@ class Home extends Component {
   }
 
   getLeaderboard() {
-    axios.get("/leaderboard").then(board => {
-      this.setState({ leaderboard: board.data });
-    });
+    axios.get('/leaderboard')
+      .then((board) => {
+        this.setState({ leaderboard: board.data });
+      })
+      .catch(err => {
+        console.error(err);
+      });
   }
 
   render() {
