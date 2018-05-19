@@ -13,8 +13,8 @@ class Clock extends Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     // set the new value for the timer to the current state
     let current = {};
-    if (prevState.seconds === undefined && nextProps.time) {
-      current.seconds = nextProps.time;
+    if (prevState.seconds === undefined && nextProps.currentTime) {
+      current.seconds = nextProps.currentTime;
     }
     if (prevState.owner !== nextProps.player) {
       current.owner = nextProps.player;
@@ -39,6 +39,7 @@ class Clock extends Component {
     // Check if we're at zero.
     if (this.state.seconds === 0) {
       clearInterval(this.timer);
+      this.props.updateTime(this.state.owner, this.state.seconds - 1);
       this.props.timeOut(this.state.owner);
       return;
     }
@@ -67,7 +68,6 @@ class Clock extends Component {
   }
 
   render() {
-    console.log("this owner", this.state.owner);
     let format_time = this.formatSeconds(this.state.seconds);
     if (this.props.shouldCount) {
       this.start();

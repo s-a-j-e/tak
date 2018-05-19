@@ -35,12 +35,15 @@ class LiveGame extends Component {
       user: props.currentUser,
       OpponentName: "",
       myCounter: false,
-      opponentCounter: false
+      opponentCounter: false,
+      mycurrentTime: 0,
+      opponentCurrentTime: 0
     };
     this.movePieces = this.movePieces.bind(this);
     this.handleSquareClick = this.handleSquareClick.bind(this);
     this.selectCapstone = this.selectCapstone.bind(this);
     this.timeOut = this.timeOut.bind(this);
+    this.updateTime = this.updateTime.bind(this);
 
     const { socket, username } = props;
     const { roomId } = props.match.params;
@@ -65,7 +68,22 @@ class LiveGame extends Component {
           const game = new Game(boardSize, gameState, player1, player2);
           game.activePlayer = activePlayer;
           game.time = time;
-          
+          game.player1CurrentTime = time;
+          game.player2CurrentTime = time;
+          //game start when player2 joined
+
+          if (username === player1) {
+            this.setState({
+              mycurrentTime: game.player1CurrentTime,
+              opponentCurrentTime: game.player2CurrentTime
+            });
+          } else {
+            this.setState({
+              mycurrentTime: game.player2CurrentTime,
+              opponentCurrentTime: game.player2CurrentTime
+            });
+          }
+
           let opponent;
           if (this.props.username === player1) {
             opponent = player2;
@@ -294,6 +312,18 @@ class LiveGame extends Component {
     var sound = new Audio(this.sounds[src]);
     sound.play();
   }
+  //update time
+  updateTime(player, currentTime) {
+    if (this.props.username === player) {
+      this.setState({
+        mycurrentTime: currentTime
+      });
+    } else {
+      this.setState({
+        opponentCurrentTime: currentTime
+      });
+    }
+  }
 
   timeOut(player) {
     let game = this.state.game;
@@ -372,8 +402,10 @@ class LiveGame extends Component {
         <div className="game-info">
           <div>
             <Clock
+              updateTime={this.updateTime}
               player={this.state.OpponentName}
               time={this.state.time}
+              currentTime={this.state.opponentCurrentTime}
               shouldCount={this.state.opponentCounter}
               timeOut={this.timeOut}
             />
@@ -392,8 +424,10 @@ class LiveGame extends Component {
 
           <div>
             <Clock
+              updateTime={this.updateTime}
               player={username}
               time={this.state.time}
+              currentTime={this.state.mycurrentTime}
               shouldCount={this.state.myCounter}
               timeOut={this.timeOut}
             />
