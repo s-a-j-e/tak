@@ -36,8 +36,8 @@ class LiveGame extends Component {
       opponentName: "",
       myCounter: false,
       opponentCounter: false,
-      myTimeLeft: 0,
-      opponentTimeLeft: 0
+      mycurrentTime: 0,
+      opponentCurrentTime: 0
     };
     this.movePieces = this.movePieces.bind(this);
     this.handleSquareClick = this.handleSquareClick.bind(this);
@@ -47,7 +47,7 @@ class LiveGame extends Component {
 
     const { socket, username } = props;
     const { roomId } = props.match.params;
-    
+
     // socket.emit('anonUsernameCheck', username);
 
     // socket.on('setUsername', (username) => {
@@ -68,7 +68,7 @@ class LiveGame extends Component {
       console.log('fetchGame emitted')
       socket.emit('fetchGame', roomId);
     }, 600);
-    
+
     socket.on('syncGame', ({ boardSize, gameState, timeControl, player1, player2, roomId, activePlayer }) => {
       console.log('syncGame fired');
       if (roomId === props.match.params.roomId) {
@@ -76,23 +76,9 @@ class LiveGame extends Component {
         const game = new Game(boardSize, gameState, player1, player2);
         game.activePlayer = activePlayer;
         game.timeControl = timeControl;
-        game.player1CurrentTime = timeControl;
-        game.player2CurrentTime = timeControl;
-
-        if (username === player1) {
-          this.setState({
-            mycurrentTime: game.player1CurrentTime,
-            opponentCurrentTime: game.player2CurrentTime
-          });
-        } else {
-          this.setState({
-            mycurrentTime: game.player2CurrentTime,
-            opponentCurrentTime: game.player2CurrentTime
-          });
-        }
 
         let opponent;
-        if (this.props.username === player1) {
+        if (username === player1) {
           opponent = player2;
         } else {
           opponent = player1;
@@ -104,19 +90,34 @@ class LiveGame extends Component {
           opponentName: opponent,
         });
 
-        if (this.props.username === game.activePlayer) {
-          this.setState({
-            myCounter: true,
-            opponentCounter: false
-          });
+      }
+    })
+
+
+    socket.on('updateTime', ({ roomId, activePlayer, player1, player2, player1CurrentTime, player2CurrentTime
+    }) => {
+
+      if (roomId === props.match.params.roomId) {
+        let myTime
+        let opponentTime
+        if (username === player1) {
+          myTime = player1CurrentTime
+          opponentTime = player2CurrentTime
         } else {
-          this.setState({
-            myCounter: false,
-            opponentCounter: true
-          });
+          myTime = player2CurrentTime
+          opponentTime = player1CurrentTime
         }
+        this.setState({
+          mycurrentTime: myTime,
+          opponentCurrentTime: opponentTime
+        });
+
       }
     });
+
+
+
+
 
     socket.on('pendingGame', ({ boardSize, timeControl, roomId }) => {
       if (roomId === props.match.params.roomId) {
@@ -135,10 +136,11 @@ class LiveGame extends Component {
         });
       }
     });
-
-    //Sound Effect
-    // this.sounds = { brick: sound_brick_drop };
   }
+
+  //Sound Effect
+  // this.sounds = { brick: sound_brick_drop };
+
 
   movePieces(col, row) {
     const { game, stone } = this.state;
@@ -186,10 +188,10 @@ class LiveGame extends Component {
           ptn: ptnString,
           tps,
           ranked,
-        }) 
-        .catch(err => {
-          console.error(err);
-        });
+        })
+          .catch(err => {
+            console.error(err);
+          });
       }
     }
   }
@@ -223,31 +225,31 @@ class LiveGame extends Component {
     if (this.state.game.winType === '1/2') {
       return <p>{`It's a Draw!`}</p>;
     }
-    else if (this.state.game.winType === '1/2' && this.state.game.isBoardFull){
+    else if (this.state.game.winType === '1/2' && this.state.game.isBoardFull) {
       return (
         <div>
-          <p>Board is Full <br/></p>
+          <p>Board is Full <br /></p>
           <p>{`It's a Draw! ${winner} wins!`}</p>
         </div>
       );
     } else if (this.state.game.winType === "R") {
       return (
         <div>
-          <p>Road Completed <br/></p>
+          <p>Road Completed <br /></p>
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
       );
     } else if (this.state.game.winType === "F" && this.state.game.isBoardFull) {
       return (
         <div>
-          <p>Board is Full <br/></p>
+          <p>Board is Full <br /></p>
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
       );
     } else if (this.state.game.winType === "F") {
       return (
         <div>
-          <p>A Player Ran Out of Pieces <br/></p>
+          <p>A Player Ran Out of Pieces <br /></p>
           <p>{`Player ${winner} wins! & Player ${loser} lost!`}</p>
         </div>
       );
@@ -275,7 +277,7 @@ class LiveGame extends Component {
     }
     return <div className="to-play">{player2}'s turn</div>;
   }
-  
+
   userTurn() {
     const { activePlayer, player1, player2 } = this.state.game;
     const { username } = this.props;
@@ -337,18 +339,18 @@ class LiveGame extends Component {
 
     PlayerPieces = (
       <div className="score">
-      <table>
-        <tr><td>{`${game.pieces[bottomPlayerNo].F} / ${game.pieces[bottomPlayerNo].C}`}</td><td>{game[`p${bottomPlayerNo}FlatScore`]}</td></tr>
-        <tr style={{'font-size': '10px'}}><td>Stones</td><td>Score</td></tr>
-      </table>
+        <table>
+          <tr><td>{`${game.pieces[bottomPlayerNo].F} / ${game.pieces[bottomPlayerNo].C}`}</td><td>{game[`p${bottomPlayerNo}FlatScore`]}</td></tr>
+          <tr style={{ 'font-size': '10px' }}><td>Stones</td><td>Score</td></tr>
+        </table>
       </div>
     );
     OpponentPieces = (
       <div className="score">
-      <table>
-        <tr style={{'font-size': '10px'}}><td>Stones</td><td>Score</td></tr>
-        <tr><td>{`${game.pieces[topPlayerNo].F} / ${game.pieces[topPlayerNo].C}`}</td><td>{game[`p${topPlayerNo}FlatScore`]}</td></tr>
-      </table>
+        <table>
+          <tr style={{ 'font-size': '10px' }}><td>Stones</td><td>Score</td></tr>
+          <tr><td>{`${game.pieces[topPlayerNo].F} / ${game.pieces[topPlayerNo].C}`}</td><td>{game[`p${topPlayerNo}FlatScore`]}</td></tr>
+        </table>
       </div>
     );
 
@@ -361,11 +363,8 @@ class LiveGame extends Component {
           <div>{this.winner()}</div>
           <div>
             <Clock
-              updateTime={this.updateTime}
               player={this.state.opponentName}
-              time={this.state.timeControl}
               currentTime={this.state.opponentCurrentTime}
-              shouldCount={this.state.opponentCounter}
               timeOut={this.timeOut}
             />
           </div>
@@ -380,11 +379,8 @@ class LiveGame extends Component {
           {this.userTurn()}
           <div>
             <Clock
-              updateTime={this.updateTime}
               player={username}
-              time={this.state.timeControl}
               currentTime={this.state.mycurrentTime}
-              shouldCount={this.state.myCounter}
               timeOut={this.timeOut}
             />
           </div>
@@ -397,10 +393,10 @@ class LiveGame extends Component {
             <div className="stone-select">
               <div className="active-stone">{stone}</div>
               <button className={color} onClick={() => { this.toggleStanding(); }}>
-                { stone === 'S' ? 'F' : 'S' }({ game.pieces[bottomPlayerNo].F })
+                {stone === 'S' ? 'F' : 'S'}({game.pieces[bottomPlayerNo].F})
               </button>
               <button className={color} onClick={() => { this.selectCapstone('C'); }}>
-              C ({game.pieces[bottomPlayerNo].C})
+                C ({game.pieces[bottomPlayerNo].C})
               </button>
             </div>
           </div>

@@ -120,6 +120,7 @@ io.on('connection', (socket) => {
     room.activePlayer = socket.handshake.session.username;
     room.boardSize = boardSize
     room.timeControl = timeControl;
+    room.intervalId = 0;
     room.isFriendGame = isFriendGame;
     room.isPrivate = isPrivate || isFriendGame;
     room.spectators = {};
@@ -127,6 +128,9 @@ io.on('connection', (socket) => {
       roomId
     });
   });
+
+
+
 
   // Serve game state on LiveGame component initialize
   socket.on('fetchGame', async (roomId) => {
@@ -145,9 +149,32 @@ io.on('connection', (socket) => {
       }
     } else if (!player2) {
       room.player2 = username;
+      //Timer logic: game started
+      room.player1CurrentTime = timeControl
+      room.player2CurrentTime = timeControl
+
+      room.intervalId = setInterval(() => {
+        if (room.player1CurrentTime === 0 || room.player2CurrentTime === 0) {
+
+          clearInterval(room.intervalId)
+          return
+        }
+
+        if (room.player1 === room.activePlayer) {
+          room.player1CurrentTime -= 1
+        } else {
+          room.player2CurrentTime -= 1
+        }
+        io.to(roomId).emit('updateTime', {
+          roomId,
+          activePlayer: room.activePlayer, player1: room.player1, player2: room.player2, roomId, player1CurrentTime: room.player1CurrentTime, player2CurrentTime: room.player2CurrentTime
+        })
+      }, 1000)
+
       io.to(roomId).emit('syncGame', {
-        boardSize, gameState: 'new', timeControl, roomId, player1, player2: room.player2, activePlayer,
+        boardSize, gameState: 'new', timeControl, roomId, player1, player2: room.player2, activePlayer
       });
+
     } else if (username !== player2 && isPrivate) {
       socket.leave(roomId);
       socket.emit('gameAccessDenied');
@@ -190,11 +217,56 @@ io.on('connection', (socket) => {
     socket.emit('updateLobby', lobbyList);
   });
 
+  // StartTime
+  // update Time depends on active status
+  socket.on('countDown', ({ roomId, game: { activePlayer, player1, player2, player1CurrentTime, player2CurrentTime, status } }) => {
+    const room = io.sockets.adapter.rooms[roomId];
+    room.activePlayer = activePlayer
+    room.player1 = player1
+    room.player2 = player2
+    room.player1CurrentTime = player1CurrentTime
+    room.player2CurrentTime = player2CurrentTime
+    room.status = status
+    let timer1 = 0, timer2 = 0
+    if (room.activePlayer === room.player1) {
+      timer1 = setInterval(() => {
+        room.player1CurrentTime -= 1
+        socket.to(room).emit('updateTime', (room.player1CurrentTime, room.player2CurrentTime))
+      }, 1000)
+
+    } else {
+      timer2 = setInterval(() => {
+        room.player2CurrentTime -= 1
+        socket.to(room).emit('updateTime', (room.player1CurrentTime, room.player2CurrentTime))
+      }, 1000)
+
+    }
+
+
+
+
+
+
+
+
+    if (game.player1 === game.activePlayer) {
+      game.player1CurrentTime -= 1
+    } else {
+      game.player2CurrentTime -= 1
+
+    }
+    io.to(room).emit('currentTime', { game, roomId });
+
+  })
+
+
+
+
   // Chat/Typing
-  socket.on('chat', function(data) {
+  socket.on('chat', function (data) {
     io.to(data.room).emit('chat', data);
   });
-  socket.on('typing', function(data) {
+  socket.on('typing', function (data) {
     socket.to(data.room).broadcast.emit('typing', data);
   });
 });

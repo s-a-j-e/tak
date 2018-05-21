@@ -13,7 +13,11 @@ class Game {
     this.winString = '';
     this.ranked = ranked;
     this.size = size;
+    this.status = 0
+    this.player1CurrentTime = 0
+    this.player2CurrentTime = 0
     this.timeControl = '';
+    this.timeIncrement = 0
     this.board = [];
     this.squares = {};
     this.createBoard(size);
@@ -66,16 +70,16 @@ class Game {
 
   setMoveDir(stack) {
     if (stack.col > this.moveOrigin.col &&
-        stack.row === this.moveOrigin.row) {
+      stack.row === this.moveOrigin.row) {
       this.moveDir = '>';
     } else if (stack.col < this.moveOrigin.col &&
-               stack.row === this.moveOrigin.row) {
+      stack.row === this.moveOrigin.row) {
       this.moveDir = '<';
     } else if (stack.col === this.moveOrigin.col &&
-               stack.row > this.moveOrigin.row) {
+      stack.row > this.moveOrigin.row) {
       this.moveDir = '+';
     } else if (stack.col === this.moveOrigin.col &&
-               stack.row < this.moveOrigin.row) {
+      stack.row < this.moveOrigin.row) {
       this.moveDir = '-';
     }
   }
@@ -101,8 +105,8 @@ class Game {
         this.plyPtn.shift();
       }
       if (((this.plyPtn.length === 3 || this.plyPtn.length === 2) &&
-          this.plyPtn[this.plyPtn.length - 1] === 1) ||
-          this.plyPtn[0] === this.plyPtn[2]) {
+        this.plyPtn[this.plyPtn.length - 1] === 1) ||
+        this.plyPtn[0] === this.plyPtn[2]) {
         this.plyPtn.pop();
       }
       if (this.plyPtn.length) {
@@ -156,7 +160,7 @@ class Game {
             stack.stone = square.split('').pop();
             square = square.slice(0, square.length - 1);
           }
-          let s = square.split('').reverse().map(x=>+x);
+          let s = square.split('').reverse().map(x => +x);
           stack.stack = s;
           stack.isEmpty = false;
           stack.owner = s[0];
@@ -202,7 +206,7 @@ class Game {
           } else {
             this.checkOutOfPiecesWins();
           }
-        // Start a move
+          // Start a move
         } else if (!isEmpty && (stack.owner === this.toPlay)) {
           this.moveStack = [...stack.stack];
           this.toMove.stack = stack.stack.splice(0, this.size);
@@ -219,16 +223,16 @@ class Game {
               if (stack.neighbors[dir].stone === '') {
                 stack.neighbors[dir].validMove = true;
               } else if (stack.neighbors[dir].stone === 'S' &&
-                         this.toMove.stone === 'C' &&
-                         this.toMove.stack.length === 1) {
+                this.toMove.stone === 'C' &&
+                this.toMove.stack.length === 1) {
                 stack.neighbors[dir].validMove = true;
               }
             });
         }
-      // Continue Movement
+        // Continue Movement
       } else if (this.isMoving &&
-                 stack.stone === '' &&
-                 stack.validMove === true) {
+        stack.stone === '' &&
+        stack.validMove === true) {
         this.setMoveDir(stack);
         this.toMove.coord = coord;
         if (this.moveDir !== '') {
@@ -239,8 +243,8 @@ class Game {
             if (stack.neighbors[this.moveDir].stone === '') {
               stack.neighbors[this.moveDir].validMove = true;
             } else if (stack.neighbors[this.moveDir].stone === 'S' &&
-                       this.toMove.stone === 'C' &&
-                       this.toMove.stack.length === 2) {
+              this.toMove.stone === 'C' &&
+              this.toMove.stack.length === 2) {
               stack.neighbors[this.moveDir].validMove = true;
             }
           }
@@ -274,11 +278,11 @@ class Game {
           }
           this.moveDir = '';
         }
-      // Wallsmash
+        // Wallsmash
       } else if (this.isMoving &&
-                 stack.stone === 'S' &&
-                 this.toMove.stone === 'C' &&
-                 this.toMove.stack.length === 1) {
+        stack.stone === 'S' &&
+        this.toMove.stone === 'C' &&
+        this.toMove.stack.length === 1) {
         this.setMoveDir(stack);
         this.toMove.coord = coord;
         this.step = stack.coord;
@@ -305,7 +309,7 @@ class Game {
     let checked = [];
     const followRoad = (square, p) => {
       if ((checkNS && square.edges.includes('+')) ||
-          (checkEW && square.edges.includes('>'))) {
+        (checkEW && square.edges.includes('>'))) {
         this.victor = p;
         this.victorUsername = (this.victor === 1) ? this.player1 : this.player2;
         this.loserUsername = (this.victor === 1) ? this.player2 : this.player1;
@@ -351,27 +355,27 @@ class Game {
     }
   }
 
-  checkFullBoardWins(){
+  checkFullBoardWins() {
     let isOccupiedCnt = 0;
     let p1FCnt = 0;
-    let p2FCnt =0;
-    
+    let p2FCnt = 0;
+
     Object.values(this.squares).forEach(square => {
-      if(square.isEmpty === false){
+      if (square.isEmpty === false) {
         isOccupiedCnt++;
-        if(square.owner === 1 && square.stone === ''){
+        if (square.owner === 1 && square.stone === '') {
           p1FCnt++;
         }
-        if(square.owner === 2 && square.stone === ''){
+        if (square.owner === 2 && square.stone === '') {
           p2FCnt++;
         }
-      } 
+      }
     })
     this.p1FlatScore = p1FCnt;
     this.p2FlatScore = p2FCnt;
-    if( isOccupiedCnt === (this.size * this.size)){
+    if (isOccupiedCnt === (this.size * this.size)) {
       this.isBoardFull = true;
-      if(this.p1FlatScore === this.p2FlatScore){
+      if (this.p1FlatScore === this.p2FlatScore) {
         this.victor = 0;
         this.winType = '1/2';
         this.setWinString();
@@ -386,8 +390,8 @@ class Game {
     return;
   }
 
-  checkOutOfPiecesWins(){
-    if(this.p1FlatScore === this.p2FlatScore){
+  checkOutOfPiecesWins() {
+    if (this.p1FlatScore === this.p2FlatScore) {
       this.victor = 0;
       this.winType = '1/2';
       this.setWinString();
