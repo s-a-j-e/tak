@@ -107,7 +107,38 @@ io.on('connection', (socket) => {
     const { session } = socket.handshake;
     session.username = username;
     session.save();
+    //start to update room.player1 or room.player2 based on new login username
+    socket.emit('refreshUser', username)
+
   });
+  // update room.player1 or room.player2 based on new login username
+  socket.emit('updatePlayerName', (roomId, newUsername, change) => {
+    const room = io.sockets.adapter.rooms[roomId];
+    let { player1, player2, activePlayer } = room
+    if (player1 === activePlayer) {
+      if (change === player1) {
+        room.activePlayer = newUsername
+        room.player1 = newUsername
+      } else {
+        room.player2 = newUsername
+      }
+    } else {
+      if (change === player1) {
+        room.player1 = newUsername
+      } else {
+        room.activePlayer = newUsername
+        room.player2 = newUsername
+      }
+    }
+    io.to(roomId).emit('syncGame', {
+      boardSize, gameState, roomId, player1: room.player1, player2: room.player2, activePlayer: room.activePlayer, player1Time, player2Time, status,
+    });
+  })
+
+
+
+
+
 
   // Maintain session for anon users on App initialize if not logged in
   socket.on('AnonUserSession', (username) => {

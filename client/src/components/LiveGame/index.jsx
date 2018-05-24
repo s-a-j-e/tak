@@ -46,9 +46,9 @@ class LiveGame extends Component {
     const { socket, username } = props;
     const { roomId } = props.match.params;
     const loadGame = this.props.location.state ? this.props.location.state.game : null;
-    
+
     socket.emit('fetchGame', username, roomId, loadGame);
-    
+
     socket.on('syncGame', ({ boardSize, gameState, player1Time, player2Time, status, player1, player2, roomId, activePlayer, isPlayer1 }) => {
       if (roomId === props.match.params.roomId) {
         const game = new Game(boardSize, gameState, player1, player2);
@@ -70,6 +70,29 @@ class LiveGame extends Component {
       }
     });
 
+    //refresh player1 player2 info 
+    socket.on('refreshUser', (newUsername) => {
+
+      this.setState({
+        user: newUsername
+      })
+
+      if (newUsername) {
+        let change
+        if (newUsername === this.state.game.player1) {
+          change = player1
+        } else {
+          change = player2
+        }
+        socket.emit('updatePlayerName', {
+          roomId,
+          change,
+          newUsername
+
+        })
+      }
+
+    })
     socket.on('pendingGame', ({ boardSize, timeControl, roomId }) => {
       if (roomId === props.match.params.roomId) {
         const game = new Game(boardSize, 'new', this.props.username, this.props.username);
@@ -304,13 +327,13 @@ class LiveGame extends Component {
     }
 
     let pToPlay, oppToPlay;
-    if((game.toPlay === 1 && bottomPlayerNo === 1) || 
-       (game.toPlay === 2 && bottomPlayerNo === 2)) {
+    if ((game.toPlay === 1 && bottomPlayerNo === 1) ||
+      (game.toPlay === 2 && bottomPlayerNo === 2)) {
       pToPlay = 'to-play';
       oppToPlay = '';
     } else {
       oppToPlay = 'to-play';
-      pToPlay =  '';
+      pToPlay = '';
     }
 
     if (game.player1 === game.player2) {
@@ -390,7 +413,7 @@ class LiveGame extends Component {
         <div className="game-info">
           <div>{this.winner()}</div>
           {/*this.opponentTurn()*/}
-          <div className={`timer ${oppToPlay}`} style={{ 'border-bottom':'0' }}>
+          <div className={`timer ${oppToPlay}`} style={{ 'border-bottom': '0' }}>
             {this.formatSeconds(this.state.opponentTime)}
           </div>
           <table>
@@ -400,7 +423,7 @@ class LiveGame extends Component {
             <tr>{bottomPlayerName}</tr>
             {PlayerPieces}
           </table>
-          <div className={`timer ${pToPlay}`}style={{ 'border-top':'0' }}>
+          <div className={`timer ${pToPlay}`} style={{ 'border-top': '0' }}>
             {this.formatSeconds(this.state.myTime)}
           </div>
           {/*this.userTurn()*/}
