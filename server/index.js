@@ -93,6 +93,8 @@ io.on('connection', (socket) => {
   socket.on('login', (username) => {
     const { session } = socket.handshake;
     session.username = username;
+    // if user login while the game, we need to adjust game's players info
+    socket.emit("refreshAfterLogin", username)
     session.save();
   });
 
@@ -107,6 +109,42 @@ io.on('connection', (socket) => {
       socket.emit('setAnonUsername', session.username);
     }
   });
+
+
+  socket.on('changePlayerInfo', ({ roomId, isPlayer1, username }) => {
+    const room = io.sockets.adapter.rooms[roomId];
+    console.log("changePlayerInfo", roomId)
+    console.log("room", room)
+
+    if (!room)
+      return
+
+    console.log("changePlayerInfo")
+    console.log('old player1:', room.player1)
+    console.log('old player2:', room.player2)
+    console.log('old activePlayer:', room.activePlayer)
+
+    if (isPlayer1) {
+      if (room.activePlayer == room.player1)
+        room.activePlayer = username
+      room.player1 = username
+    }
+    else {
+      if (room.activePlayer == room.player2)
+        room.activePlayer = username
+      room.player2 = username
+    }
+
+    console.log('new player1:', room.player1)
+    console.log('new player2:', room.player2)
+
+    console.log('new activePlayer:', room.activePlayer)
+
+    const { boardSize, gameState, player1, player2, player1Time, player2Time, status, activePlayer } = room;
+    io.to(roomId).emit('syncGame', {
+      boardSize, gameState, player1Time, player2Time, status, player1, player2, activePlayer, roomId,
+    });
+  })
 
   // Create a new game and save game state to room
   socket.on('createGame', async ({ boardSize, timeControl, isFriendGame, isPrivate, roomId }) => {
@@ -191,10 +229,10 @@ io.on('connection', (socket) => {
   });
 
   // Chat/Typing
-  socket.on('chat', function(data) {
+  socket.on('chat', function (data) {
     io.to(data.room).emit('chat', data);
   });
-  socket.on('typing', function(data) {
+  socket.on('typing', function (data) {
     socket.to(data.room).broadcast.emit('typing', data);
   });
 });
